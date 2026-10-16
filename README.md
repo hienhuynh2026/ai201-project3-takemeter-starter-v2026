@@ -39,9 +39,12 @@
 
 ## What This Does
 
-<!-- Your community, and what your classifier sorts posts into. Three or four
-     sentences. -->
+Community: RealGM General NBA Board
 
+Candidate distinctions I saw while reading:
+1. Some posts are structured around asking questions to spark discussions, while others are statement based expressing their opinions, takes, or predictions 
+2. Some posts are more into business aspect of the NBA this includes front office mechanics including proposed trades while others are more general commentary on the player or teams performances
+3. Some are more extensive breakdowns on the team/players performances while others are short one liners or brief commentary.
 
 
 ---
