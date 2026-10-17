@@ -55,11 +55,11 @@ whether you hit them:
 
 <!-- Your criterion. It must name a number. -->
 
-
+Overall accuracy: at least 0.65 on the held-out test set, on all three seeds.
 
 **Why this target:**
 
-
+I have three labels (`stat_backed`, `hot_take`, `neutral`), so guessing gets about 33%. 0.65 is roughly double chance. Many RealGM posts are short one-liners that give the model little text to work with, so I don't expect much higher, and the target has to hold on every seed, not just the best one.
 
 ---
 
@@ -67,11 +67,11 @@ whether you hit them:
 
 <!-- Your criterion. -->
 
-
+Per-label performance: every label has an F1 of at least 0.55 on the held-out test set, on all three seeds.
 
 **Why this target:**
 
-
+My hardest boundary is `stat_backed` vs. `neutral`. Posts that list stats but only ask a question, like the Ty Jerome post, will pull both labels' F1 down. `stat_backed` will probably be my smallest label, so its test-split F1 will jump around between seeds. 0.55 is the floor where neither label is being ignored.
 
 ---
 
@@ -79,11 +79,11 @@ whether you hit them:
 
 <!-- Your criterion. -->
 
-
+Balance: each label's share of the model's test-set predictions is within 10 percentage points of its true share in the test set.
 
 **Why this target:**
 
-
+Many RealGM posts are short, unsupported opinions, so `hot_take` will likely be my biggest label. I want to catch the model falling back on `hot_take` for anything ambiguous instead of learning the other two labels.
 
 ---
 
@@ -91,11 +91,11 @@ whether you hit them:
 
 <!-- Your criterion. -->
 
-
+Consistency: at least 70% agreement (21 of 30) with the staff labels on the agreement set.
 
 **Why this target:**
 
-
+Several of the 30 staff posts are deliberately ambiguous, and I'm applying the staff taxonomy instead of my own, so some disagreement is expected. Below 70% would suggest I apply written decision rules loosely, which would also put my own 200 labels in doubt.
 
 ---
 
@@ -103,11 +103,11 @@ whether you hit them:
 
 <!-- Your criterion. -->
 
-
+Confidence: accuracy on the most-confident third of test predictions is at least 0.15 higher than accuracy on the least-confident third.
 
 **Why this target:**
 
-
+Clear-cut posts (a full stat line, or a "don't @ me" take) should be easy and confident, while stat-heavy questions on my `stat_backed`/`neutral` boundary should be the uncertain ones. If confidence doesn't separate right from wrong by at least 0.15, it can't be used to flag posts for review.
 
 ---
 
