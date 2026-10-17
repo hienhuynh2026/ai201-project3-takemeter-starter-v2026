@@ -57,33 +57,47 @@ Candidate distinctions I saw while reading:
      The decision rule is worth a point on its own and it's the thing most
      people leave out. Every taxonomy has a hardest boundary. Name yours. -->
 
-### `label_one`
+### `stat_backed`
 
-**Definition:**
-
-**Example 1:**
->
-
-**Example 2:**
->
-
-### `label_two`
-
-**Definition:**
+**Definition:** A take on a player, team, or move that is supported by a specific number, stat, or record you could look up.
 
 **Example 1:**
->
+> "IDK why there is this narrative that IQ can't stay healthy. He has played 68+ games in every season, except for playing 64 games in 2021 (which was a 72-game season, and playing 64/72 games is the equivalent of 73 games in a full 82-game season), and then 33 games in 2025 when the Raptors were tanking. So he had one year of injuries. That is it."
 
 **Example 2:**
->
+> "In last night's pre season game Gonzalez had 17 points in 21 minutes, 6-7 from the floor, including a perfect 4-4 from beyond the arc, 6 rebounds, 2 assists and a steal. The Celtics had a large lead when he came in, so there was no pressure, but even so it was a strong, mistake-free performance. And he doesn't turn 21 until February."
+
+### `hot_take`
+
+**Definition:** A confident opinion or prediction about a player, team, or move with no evidence offered — it might be true, but it isn't argued.
+
+**Example 1:**
+> "His ceiling is the greatest baller to ever play the game. Don't @ me if you disagree"
+
+**Example 2:**
+> "Myles Turner is a bucket of ass. Is he the softest big in the league? Hate that he's on my team..."
+
+### `neutral`
+
+**Definition:** A post that takes no position on who is good or bad — a question, news, logistics, or general excitement.
+
+**Example 1:**
+> "I just got my NBA league pass, what you all use to watch games on?"
+
+**Example 2:**
+> "Got league pass a couple hours ago, cannot wait for the first preseason game."
 
 ### The hardest boundary
 
-**Which two labels:**
+**Which two labels:** `stat_backed` vs. `neutral`
+
+**The borderline post:**
+> "Last year Ty Jerome dealt with injuries and only played in 15 games. He averaged 19.7 points in 22.4 minutes per game with a .474 FG% and .420 from three. The previous year he played in 70 games and averaged 12.5 points per game with a .516 FG% and .435 from three. 19.9 minutes per game. How good is he? I've barely watched him play."
 
 **The decision rule I used every time:**
 <!-- e.g. "If the post names a specific checkable fact, it's `analysis`, even
      if the tone is heated." -->
+If the post doesn't take a position on whether a player, team, or move is good or bad, it's `neutral`, even if it's full of stats. Stats only make a post `stat_backed` when they're being used to support a take.
 
 
 
