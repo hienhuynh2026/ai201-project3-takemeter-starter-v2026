@@ -6,5 +6,5 @@
 # Delete the examples below and put yours in.
 
 stat_backed: a take on a player, team, or move that is supported by a specific number, stat, or record you could look up
-hot_take: a confident opinion or prediction about a player, team, or move with no evidence offered
-neutral: a post that takes no position on who is good or bad, such as a question, news, logistics, or general excitement
+hot_take: a confident opinion or prediction about a player, team, or move with no evidence offered — it might be true, but it isn't argued
+neutral: a post that takes no position on who is good or bad — a question, news, logistics, or general excitement
