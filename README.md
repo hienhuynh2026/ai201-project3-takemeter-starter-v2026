@@ -108,19 +108,22 @@ If the post doesn't take a position on whether a player, team, or move is good o
 <!-- Where you collected from, how you labelled, your counts, and three hard
      cases. -->
 
-**Where the posts came from:**
+**Where the posts came from:** Every post is from the RealGM General NBA Board, copied from threads about the preseason, trades, contracts, rookies and team outlooks. My first collection had 365 rows, but 21 of them came from somewhere else (20 from another forum plus one Rookie of the Year post), so I deleted those and was left with 344 RealGM posts.
 
-**How I labelled them:** <!-- Cold first? Pre-labelled with AI and corrected?
-Say so plainly — the disclosure is required, not penalised. -->
+**How I labelled them:** I did 20 posts first completely on my own, with no AI and no tools, just my definitions and decision rule. Those are marked `cold` in the note column. After that I gave Claude my label definitions and my stat_backed vs. neutral decision rule and had it pre-label the other 324 posts. Those rows are marked `pre-labelled` in the note column, and I went through them myself and changed any label I disagreed with.
+
+Once everything had a label, hot_take was 66% of the data (227 of 344) and stat_backed was only 9% (32 posts). That was too lopsided. A model could get most of the way there by guessing hot_take every time, and it wouldn't see enough stat_backed posts to learn the label I actually care about. So instead of keeping all 344, I kept all 20 cold rows, every stat_backed and neutral post, and a random set of hot_take posts, which brought me to 200 rows. I picked the hot_take rows randomly so I wouldn't just keep the easy ones.
+
+I'd rather have 200 rows I actually read than 344 I rushed through. stat_backed is still my smallest label at 33 posts, which means only about 5 of them will land in the test set. If the model struggles on that label next unit, that's the first thing I'll look at.
 
 **Counts per label:**
 
 | Label | Count | Share |
 |---|---|---|
-|  |  |  |
-|  |  |  |
-|  |  |  |
-| **Total** |  | 100% |
+| `neutral` | 84 | 42% |
+| `hot_take` | 83 | 41.5% |
+| `stat_backed` | 33 | 16.5% |
+| **Total** | **200** | 100% |
 
 **Three hard cases**
 
@@ -128,25 +131,25 @@ Say so plainly — the disclosure is required, not penalised. -->
      been, and what you chose. These are worth more than the easy 190. -->
 
 **1.**
-> *The post:*
+> *The post:* "Doesn't need to be. He's a high impact player on a $3m contract. You don't give those away. Depth and versatility is what is needed"
 >
-> *Could have been:*
+> *Could have been:* `stat_backed` or `hot_take`
 >
-> *I chose, because:*
+> *I chose, because:* `hot_take`. The $3m is a real number you could look up, so at first I wanted to call it stat_backed. But the salary isn't the proof here. The actual claim is that he's "high impact," and nothing in the post backs that up. The contract number just explains why he's cheap, not why he's good.
 
 **2.**
-> *The post:*
+> *The post:* "These 2 were actually going to be my mentions. For the Cavs: Mario Hezonja hasn't played an NBA game since August 2020 and he has a real chance to be the Cavs first big off the bench this season. He put up 20 points in the wine & gold scrimmage. Then the back-up PG battle is between rookie Meleek Thomas and 1 year pro Tyrese Proctor..."
 >
-> *Could have been:*
+> *Could have been:* `stat_backed` or `neutral`
 >
-> *I chose, because:*
+> *I chose, because:* `stat_backed`. A lot of this reads like news about who's fighting for minutes, which pushed me toward neutral. What tipped it is that the poster does take a position, that Hezonja has a real chance to be the first big off the bench, and the 20 points in the scrimmage is the evidence for it. My rule says stats count when they support a take, and here they do.
 
 **3.**
-> *The post:*
+> *The post:* "For a guy that played 54 games last season at 9 minutes per game, plus 10 playoff games at 7 minutes per game. He also played 5 minutes this game and then got injured. I just really don't know how you stop that from happening, except reverting back to the old style of play..."
 >
-> *Could have been:*
+> *Could have been:* `stat_backed` or `neutral`
 >
-> *I chose, because:*
+> *I chose, because:* `neutral`. This one is full of numbers, which is exactly the trap my decision rule is for. The stats aren't being used to say the player is good or bad. They're just describing how little he played before getting hurt, and the rest of the post is about how the modern game causes injuries like this. No position on the player, so it's neutral even with all the stats.
 
 ---
 
@@ -189,7 +192,7 @@ of next unit's variance. -->
 - *What came back:*
 - *What I changed:*
 
-**Pre-labelling disclosure:**
+**Pre-labelling disclosure:** 180 of my 200 rows were pre-labelled by Claude using my label definitions and decision rule, and they're marked `pre-labelled` in the note column. I read those rows and corrected the labels I disagreed with. The other 20 rows are marked `cold` and I labelled them myself with no AI help.
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
