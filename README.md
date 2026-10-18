@@ -69,7 +69,7 @@ Candidate distinctions I saw while reading:
 
 ### `hot_take`
 
-**Definition:** A confident opinion or prediction about a player, team, or move with no evidence offered — it might be true, but it isn't argued.
+**Definition:** A confident opinion or prediction about a player, team, or move with no evidence offered. It might be true, but it isn't argued.
 
 **Example 1:**
 > "His ceiling is the greatest baller to ever play the game. Don't @ me if you disagree"
@@ -79,7 +79,7 @@ Candidate distinctions I saw while reading:
 
 ### `neutral`
 
-**Definition:** A post that takes no position on who is good or bad — a question, news, logistics, or general excitement.
+**Definition:** A post that takes no position on who is good or bad, like a question, news, logistics, or general excitement.
 
 **Example 1:**
 > "I just got my NBA league pass, what you all use to watch games on?"
@@ -157,16 +157,21 @@ I'd rather have 200 rows I actually read than 344 I rushed through. stat_backed 
 
 <!-- Your starting model, your settings, and anything you changed and why. -->
 
-**Base model:**
+**Base model:** `distilbert-base-uncased`
 
-**Settings:** <!-- epochs, learning rate, batch size, seed -->
+**Settings:** 3 epochs, learning rate 2e-5, batch size 16, max length 128, seed 42. I trained on my laptop's CPU (torch 2.2.2).
 
-**Anything I changed from the defaults, and why:**
+**Anything I changed from the defaults, and why:** Nothing. I left every setting at the default because this is my first run and I wanted a baseline to compare against next unit before changing anything.
 
-**Split sizes:** <!-- train / val / test, and per-label counts in the test
-split. If a label had fewer than about 8 in test, say so — it explains a lot
-of next unit's variance. -->
+**Split sizes:** 139 train / 31 validation / 30 test.
 
+| Label | Train | Val | Test |
+|---|---|---|---|
+| `hot_take` | 58 | 13 | 12 |
+| `neutral` | 58 | 13 | 13 |
+| `stat_backed` | 23 | 5 | 5 |
+
+stat_backed only has 5 posts in the test set, which is under the 8 or so you'd want. That means every single stat_backed post changes its F1 by a lot, so I expect that number to jump around between seeds. On this first run the model got all 5 of them wrong (F1 0.00), which lines up with what I worried about when I was building the dataset.
 
 
 ---
@@ -182,17 +187,17 @@ of next unit's variance. -->
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked Claude to help me design my labels. My first idea was positive / negative / neutral, plus a label for posts backed by stats.
+- *What came back:* Claude pointed out that this mixes two different things. Positive and negative are about how someone feels, while "backed by stats" is about whether they give evidence, so one post could fit two labels at once. It suggested picking one axis and offered an evidence-based set: stat_backed, hot_take, neutral.
+- *What I changed:* I dropped the sentiment labels and went with the evidence-based set. That's also why my hardest boundary ended up being stat_backed vs. neutral, since a post can be full of numbers without actually arguing anything.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I wrote my own draft of the five acceptance criteria and asked Claude to fix it.
+- *What came back:* Claude caught that my draft still talked about four labels and sentiment, used a two-person consistency check I don't actually have, and had a confidence target the notebook doesn't measure. It rewrote all five so each one uses a number the notebook really reports (accuracy, per-label F1, predicted share, agreement with the staff set, and most-sure vs. least-sure third).
+- *What I changed:* I kept the structure of my original five areas but used the rewritten versions, so every target is something I can actually check next unit across all three seeds.
 
-**Pre-labelling disclosure:** 180 of my 200 rows were pre-labelled by Claude using my label definitions and decision rule, and they're marked `pre-labelled` in the note column. I read those rows and corrected the labels I disagreed with. The other 20 rows are marked `cold` and I labelled them myself with no AI help.
+**Pre-labelling disclosure:** 180 of my 200 rows were pre-labelled by Claude using my label definitions and decision rule, and they're marked `pre-labelled, checked` in the note column. I read those rows and corrected the labels I disagreed with. The other 20 rows are marked `cold` and I labelled them myself with no AI help.
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
