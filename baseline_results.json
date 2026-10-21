@@ -1,0 +1,184 @@
+{
+  "model": "facebook/bart-large-mnli",
+  "n": 30,
+  "seed": 42,
+  "held_out": true,
+  "used_definitions": true,
+  "scores": {
+    "n": 30,
+    "accuracy": 0.4,
+    "f1_macro": 0.1904761904761905,
+    "per_label": {
+      "hot_take": {
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1": 0.5714285714285715,
+        "support": 12
+      },
+      "neutral": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "stat_backed": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5
+      }
+    }
+  },
+  "predictions": [
+    {
+      "text": "I like Kyrie on this Dallas team but he doesn't match the timeline. If Dallas gets a decent offer that meshes more with Flagg (a younger player, picks or both) they should move him, imo.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "15 free Cavs games with the ol' bunny ears over the airwaves on RESN and 3 more additional Cavs games the same way via NBC National broadcast.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "We'll see how season 2 goes. He was playing with house money last year. Everything was upside. Its not a contract year, but eventually a guard in San Antonio will have to make a decision to embrace the 6th man role, force a trade, or wait to be traded.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "You don't have to do that. I just wanted a place I can reference it. Once the draft is over and all the players land in their new homes, I will edit it to add their teams. I feel like the draft discussion is a separate thing. I expect a few of my sleepers to be undrafted free agents/exhibit-10 candidates.",
+      "gold": "stat_backed",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "IDK why there is this narrative that IQ can't stay healthy. He has played 68+ games in every season, except for playing 64 games in 2021 (which was a 72-game season, and playing 64/72 games is the equivalent of 73 games in a full 82-game season), and then 33 games in 2025 when the Raptors were tanking. So he had one year of injuries. That is it. And even then, if the Raptors were competitive that year he probably surpasses 50/60 games (just my guess).",
+      "gold": "stat_backed",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Well, they likely all have the opportunity to get him for a little more now.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "This year's rookie class is gonna be so fun to watch. Caleb Wilson, Petersen and AJ have already thrilled me in the preseason, didn't see Yaxel being so NBA ready on bingo card) And then there is Acuff too The Future of the NBA is very exciting.! And some draft experts here (not naming names) said pre draft that this year's class will be overrated/disappointing lol",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "What do you think his contract would be? Troubling injury history and finished the season poorly.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "He\u2019s been heavily negative 3 of the last 4 seasons, and the one he wasn\u2019t, he was only slightly positive playing 55 games on a 21 win team.",
+      "gold": "stat_backed",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Don't think so, there was a stat the other day, he has a 155 regular season games with 0 turnovers.",
+      "gold": "stat_backed",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Reminds me of Jalen Brunson with the way he plays. As for his ceiling, it might just be Jalen Brunson as well. I chose Harper over Dybantsa in fantasy. I hope I made the right choice.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Myles Turner is a bucket of ass. Is he the softest big in the league? Hate that he's on my team...",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Don't think this thread is fair tbh, esp if any players named might be reading this forum. I say this with respect and courtesy to players mental health and welfare, if someone posted that you were crap at your job publicly online on a forum/website read/perused by thousands worldwide, you would most likely feel pretty rotten/**** about it (i know i would) And it doesn't matter how much money they earn, as we have seen with the likes of Amy Winehouse, Heath Ledger and Robin Williams, mental health issues, esp depression, can affect anyone, no matter how rich and famous they are..",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Adem Bona is clearly better than all of those options. He'll have to play a bigger role. They'll probably still want to get a big body, though, since Bona is undersized for a center.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "There is a bigger chance the Chinese Basketball association will buy out the NBA than NBA buying out Euroleague.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "J dub and Chet both signed 5 year max extensions that start this year. Neither of them are going anywhere.",
+      "gold": "stat_backed",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Oh hey again super great pals of mine. It's almost time for the NBA preseason! Slate opens with Giannis and the Heat vs Kawhi and the Raps on Oct 3 (I believe this will be on NBATV) There are 5 games on ESPN/ESPN2: Sacramento at Los Angeles Lakers on Oct. 8 San Antonio at Phoenix on Oct. 10 Orlando at Cleveland on Oct 11 Chicago at Denver on Oct 11 Denver at Los Angeles Lakers on Oct. 16 Peacock will stream Cleveland at Orlando on Oct. 13 Other games are available on your local sports network/streamer, and on League Pass. (Edit: Quite a few of the LP games are also on NBATV according to my cable box. Check your listings.) Rookie debuts! Champion Knicks vs new look Sixers on Oct 5! An early look at Tatum vs Brown as Sixers visit Boston on Oct 10! Haliburton returns, Pacers vs OKC on Oct 13! And lots of other games to get excited about. Enjoy!",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Agreed, exciting to see this new NBA evolve. Surprising to see so much new talent show up.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "It'll be interesting to see how good a coach he'll be after he's had time to implement a system he's comfortable with. In all reality however, its neither a good or bad fit for the job in Chicago for he wasn't the first choice to be Portland's interim coach for Nate Bjorkgren was Portland's choice for interim",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Orlando drafting Shaq, becoming immediately respectable but still getting the #1 pick in the next draft (Webber but eventually Penny) is why the league changed to a far more weighted lottery system to begin with. Though I suppose the no repeats rule would prevent that scenario.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Not sure those 40 to 60 percentile earners are what people mean as the \"middle class\" or \"middle tier\". That's also affected by having bigger rosters moving the median from 6th to like 8th man. Looking at the players discussed, that's between the 3rd and 7th most paid on the roster.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Wish him the best. Think he showed a decent amount and given the circumstances did very well. Clearly has some learning to do but he is young and it should come in time. I would run fast from the new ownership in Portland if I were him, not even to mention the lowball salary offer he apparently received. Good for him to get out and avoid what seems like a telegraphed poor culture in Portland.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Next time there is a generational prospect, we\u2019re gonna see a couple teams try to tank out of the playoffs & people are gonna freak out.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "I just got my NBA league pass, what you all use to watch games on?",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "And just like that, basketball season is back! After one of the best off-seasons in history.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "SGA is the apex superstar in the game and a rookie in Harper took it to him. That along with having Wemby spells doom for the evil empire that are OKC. You all should be more thankful. Especially the Shai haters.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Would help if you guys get some draft capital? And from what I'm seeing, you guys don't want to extend AD",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Read on Twitter A few years back this would have been one of the best deals in any sport.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "that super league idea of football vanished so quickly once it was brought up. it is not happening anytime soon especially after the system changes in champions league. champions league looks like a super league now having not separate groups, but one division and standings.",
+      "gold": "neutral",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "This is hyperbole but dumping Embiid takes at least two first round picks and if AD somehow stays reasonably healthy he'll probably be worth two firsts to a contender. Philly doesn't have that many picks to give. Sent from my Pixel 10 Pro XL using Tapatalk",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    }
+  ]
+}

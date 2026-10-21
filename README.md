@@ -213,18 +213,19 @@ stat_backed only has 5 posts in the test set, which is under the 8 or so you'd w
 
 | Measure | Baseline | Trained | Difference |
 |---|---|---|---|
-| Overall accuracy |  |  |  |
-| Macro F1 |  |  |  |
-| F1 — `label_one` |  |  |  |
-| F1 — `label_two` |  |  |  |
+| Overall accuracy | 0.400 | 0.533 | +0.133 |
+| Macro F1 | 0.190 | 0.384 | +0.193 |
+| F1: `hot_take` | 0.571 | 0.606 | +0.035 |
+| F1: `neutral` | 0.000 | 0.545 | +0.545 |
+| F1: `stat_backed` | 0.000 | 0.000 | +0.000 |
+
+The baseline is `facebook/bart-large-mnli` run zero-shot with my definitions from `label_definitions.txt`, scored on the same 30 held-out posts as my trained model (seed 42).
 
 **What I predicted before I looked:**
-<!-- Milestone 1 asks you to write this BEFORE seeing the trained numbers. A
-     prediction made afterwards isn't one. -->
+To be upfront, I had already seen my trained model's seed 42 numbers at the end of unit 5, so this wasn't a blind guess. My prediction was that the trained model would beat the baseline mostly on `neutral`, because a general model reading my definitions would see opinions everywhere on a sports forum, and that neither model would get `stat_backed` right.
 
 **What the gap actually means:**
-<!-- If the baseline matched your trained model, your fine-tuning added
-     nothing — and that is a real finding, not a failure. Say it plainly. -->
+The baseline called all 30 posts `hot_take`. That's why it gets 0.40 accuracy (12 of the 30 really are hot takes) and a 0 on both other labels. So the whole gap comes from one place: my trained model learned to recognize some `neutral` posts (F1 went from 0 to 0.55) and the baseline never did. On `hot_take` the two are basically tied, and on `stat_backed` fine-tuning added nothing at all. Both models scored 0. My training taught the model one of my two harder labels but not the other.
 
 
 
