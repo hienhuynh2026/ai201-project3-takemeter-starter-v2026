@@ -282,23 +282,21 @@ Seed 42:
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | Overall accuracy | ≥ 0.65 on all three seeds | MISSED | Best seed was 0.633, worst was 0.533. None of the three got there. |
+| 2 | Every label F1 | ≥ 0.55 on all three seeds | MISSED | `stat_backed` was 0.000 on every seed. `hot_take` and `neutral` cleared 0.55 on all three. |
+| 3 | Balance | Every label's predicted share within 10 pts of its true share | MISSED | `stat_backed` is 17% of the test set and got 0% of predictions on every seed, so it fails by 17 points no matter what. `hot_take` was also over-predicted by 30 and 23 points on seeds 42 and 2024. |
+| 4 | Agreement with staff | ≥ 70% (21 of 30) | WAITING | Needs my agreement report. |
+| 5 | Confidence | Most-sure third beats least-sure third by ≥ 0.15 | MISSED | It passed on seeds 42 (+0.80) and 7 (+0.20) but flipped on seed 2024 (-0.30), and the target has to hold on all three. |
 
 **Diagnoses**
 
-<!-- For each miss: the cause, and how you know. The four common causes are:
-     too few examples for a label, a boundary you applied inconsistently, a
-     genuinely hard label pair, and a task the model can't reach from this
-     much data.
+**Criterion 2 (stat_backed F1) and criterion 3 (balance): too few examples for a label.** This is the main one, and criteria 1 and 3 mostly fall out of it. `stat_backed` has 33 posts total, which leaves only 23 to train on and 5 to test on. The model never predicted it once across 90 test predictions, and 13 of the 15 `stat_backed` test posts across the three seeds were called `hot_take`. That fits with how my labels work: a stat_backed post is a take that also has numbers in it, so with only 23 examples the model learned the "take" part and never learned that the numbers are supposed to matter. It was also barely trained. Average confidence sat around 0.40 when chance is 0.33, after only 27 training steps.
 
-     ⚠️ Use your agreement report as evidence. It is the only instrument you
-     have that can tell a LABELLING problem from a MODEL problem, and this
-     section is graded on whether you used it that way. -->
+**Criterion 1 (accuracy): mostly a consequence of the above plus a lopsided `neutral` / `hot_take` boundary.** Losing all 5 `stat_backed` posts caps accuracy at 25 of 30 (0.83) before anything else goes wrong. The rest of the misses are mostly real `neutral` posts called `hot_take` (7 on seed 42, 3 on seed 7, 4 on seed 2024), while far fewer go the other way. That direction is a sign this could be a labelling problem and not just a model problem, and my agreement report is how I check that. Also worth saying honestly: 180 of my 200 labels started as AI pre-labels, so if my `neutral` vs. `hot_take` line drifted, that's one place it could have come from.
 
+**Criterion 5 (confidence): small test set, not a real pattern.** Each "third" is only 10 posts, so one or two posts flip the result. Seed 42 looked great (+0.80) and seed 2024 went backwards (-0.30). With confidence values all bunched around 0.40, the model isn't really separating sure from unsure, and 10 posts per bucket can't show it either way.
+
+**What the agreement report adds:** _(fill in after running agreement.py)_
 
 
 ---
@@ -359,25 +357,32 @@ Seed 42:
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** One training parameter. I raised epochs from 3 to 8 and left everything else the same: same 200 labels, same three seeds, learning rate 2e-5, batch size 16. The change is in the notebook's settings cell with a comment saying why.
 
-**Which diagnosis pointed at it:**
+**Which diagnosis pointed at it:** The model looked undertrained. With 139 training posts and batch size 16, three epochs is only 27 training steps, and the "before" model's confidence averaged around 0.40 when random guessing is 0.33, so it was close to guessing even when it was right. My first choice would have been adding more `stat_backed` posts, since too few examples is the bigger diagnosis, but I'd already used every RealGM post I collected that fit that label. Training longer was the one change I could make cleanly and test on the same data.
 
 ### Run Log — After
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. Overall accuracy | ≥ 0.65 | 0.667 | 0.500 | 0.633 | MISSED |
+| 2. Lowest per-label F1 | ≥ 0.55 | 0.000 (stat_backed) | 0.000 (stat_backed) | 0.000 (stat_backed) | MISSED |
+| 3. Biggest gap between predicted and true share | ≤ 10 pts | 17 pts | 10 pts | 17 pts | MISSED |
+| 4. Agreement with staff labels | ≥ 70% | (labels didn't change, so same as before) | | | see Agreement Report |
+| 5. Most-confident third minus least-confident third | ≥ +0.15 | +0.50 (0.8 vs 0.3) | +0.90 (0.9 vs 0.0) | +0.20 (0.7 vs 0.5) | MET |
+
+| Measure | Seed 42 | Seed 7 | Seed 2024 | Spread |
+|---|---|---|---|---|
+| Overall accuracy | 0.667 | 0.500 | 0.633 | 0.167 |
+| Macro F1 | 0.486 | 0.377 | 0.461 | 0.109 |
+| F1: `hot_take` | 0.690 | 0.560 | 0.643 | 0.130 |
+| F1: `neutral` | 0.769 | 0.571 | 0.741 | 0.198 |
+| F1: `stat_backed` | 0.000 | 0.000 | 0.000 | 0.000 |
 
 **Did it help, and how do I know:**
+Only a little, and not on the thing I most needed. The clearest win is confidence: criterion 5 went from MISSED to MET, because the model is now more sure when it's right (about 0.59) than when it's wrong (about 0.50), and the most-confident third beat the least-confident third on all three seeds. It also stopped dumping `neutral` posts into `hot_take` as much. On seed 42 that confusion dropped from 7 posts to 3, and `neutral` F1 went up on two of the three seeds.
 
-<!-- If it didn't, say so. Relabelling that didn't help is a genuinely
-     interesting result and earns full credit. -->
-
+But the overall numbers barely moved. Average accuracy across the three seeds went from 0.589 to 0.600, and seed 7 actually got worse (0.600 to 0.500). The spread between seeds got bigger, from 10 points to almost 17, so the gains on seeds 42 and 2024 are smaller than the noise. And `stat_backed` is still 0 on every seed. With more training it finally guessed `stat_backed` twice on seed 7, but both were wrong. So training longer helped the model use the data it had, but it couldn't fix a label it only had 23 examples of.
 
 
 ---
@@ -386,12 +391,14 @@ Seed 42:
 
 <!-- For each criterion still missed: what you'd do, and why you stopped. -->
 
+**Criterion 2 (every label F1 ≥ 0.55) and criterion 3 (balance).** Both still fail because of `stat_backed`. The fix I'd try next is collecting about 50 more `stat_backed` posts from RealGM, looking specifically for threads where people argue with numbers (contract debates, stat comparisons, injury history). That would roughly double what the model learns from and push the label to around 8 posts in the test set. I stopped here because it means going back to collect and label new posts, which is a bigger job than one change in this unit, and the assignment asked for exactly one fix.
 
+**Criterion 1 (accuracy ≥ 0.65).** It hit 0.667 on one seed but dropped to 0.500 on another. With only 30 test posts, one post is worth 3.3 points of accuracy, so I can't tell a real improvement from a lucky split. More data overall would help the most here too. I'd also want the extra `stat_backed` posts first, since losing all 5 of them every run caps the score.
 
-**The gap between what I meant my labels to capture and what the model
-learned:**
-<!-- Two sentences. Your confusion matrix is the evidence. -->
+**Criterion 4 (agreement).** _(fill in after the agreement report)_
 
+**The gap between what I meant my labels to capture and what the model learned:**
+I meant `stat_backed` to mean "a take that is argued with numbers," but the model learned something closer to "has an opinion, so it's `hot_take`," and every seed sent 4 or 5 of the 5 `stat_backed` posts straight into `hot_take`. It learned the difference between having an opinion and not having one pretty well, but it never learned that the numbers in a post are what make it a different kind of post.
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
