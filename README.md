@@ -236,29 +236,40 @@ The baseline called all 30 posts `hot_take`. That's why it gets 0.40 accuracy (1
 <!-- Five criteria across three seeds. The notebook's section 6 prints the
      spread table; the Target and Verdict columns are yours. -->
 
+All three runs were on my laptop's CPU (Intel i5, torch 2.2.2), default settings: 3 epochs, learning rate 2e-5, batch size 16, max length 128.
+
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. Overall accuracy | ≥ 0.65 | 0.533 | 0.600 | 0.633 | MISSED |
+| 2. Lowest per-label F1 | ≥ 0.55 | 0.000 (stat_backed) | 0.000 (stat_backed) | 0.000 (stat_backed) | MISSED |
+| 3. Biggest gap between predicted and true share | ≤ 10 pts | 30 pts (hot_take) | 17 pts (stat_backed) | 23 pts (hot_take) | MISSED |
+| 4. Agreement with staff labels | ≥ 70% | (one number, not per seed) | | | see Agreement Report |
+| 5. Most-confident third minus least-confident third | ≥ +0.15 | +0.80 (0.9 vs 0.1) | +0.20 (0.6 vs 0.4) | -0.30 (0.5 vs 0.8) | MISSED |
+
+The full spread across seeds:
+
+| Measure | Seed 42 | Seed 7 | Seed 2024 | Spread |
+|---|---|---|---|---|
+| Overall accuracy | 0.533 | 0.600 | 0.633 | 0.100 |
+| Macro F1 | 0.384 | 0.436 | 0.465 | 0.081 |
+| F1: `hot_take` | 0.606 | 0.593 | 0.645 | 0.053 |
+| F1: `neutral` | 0.545 | 0.714 | 0.750 | 0.205 |
+| F1: `stat_backed` | 0.000 | 0.000 | 0.000 | 0.000 |
+
+Accuracy moved 10 points just from changing the seed, which is a lot. It tells me 30 test posts isn't enough to pin down a single number, and `neutral` F1 swinging by 0.2 is the same problem.
 
 ### Confusion matrix
 
-<!-- ⚠️ TYPED AS A MARKDOWN TABLE. The notebook prints one ready to paste.
-     An image of a matrix earns nothing. -->
+Seed 42:
 
-| true \ predicted |  |  |  |
+| true \ predicted | hot_take | neutral | stat_backed |
 |---|---|---|---|
-| **** |  |  |  |
-| **** |  |  |  |
-| **** |  |  |  |
+| **hot_take** | 10 | 2 | 0 |
+| **neutral** | 7 | 6 | 0 |
+| **stat_backed** | 4 | 1 | 0 |
 
 **My biggest off-diagonal number, and what it means:**
-<!-- Not "the model made mistakes" — WHICH boundary it didn't learn, and which
-     direction. "7 real analysis posts were called hot_take and only 3 went the
-     other way" is a direction, not just an error rate. -->
+7 real `neutral` posts got called `hot_take`, and only 2 went the other way, so the model leans hard toward `hot_take` whenever a post isn't clearly a question or news. The second thing that jumps out is the whole `stat_backed` row: the model never predicted `stat_backed` on any seed, and 4 or 5 of those 5 posts became `hot_take` every time, which means it treats a stat-backed take as just a take and ignores the numbers.
 
 
 
