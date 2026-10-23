@@ -199,6 +199,8 @@ stat_backed only has 5 posts in the test set, which is under the 8 or so you'd w
 
 **Pre-labelling disclosure:** 180 of my 200 rows were pre-labelled by Claude using my label definitions and decision rule, and they're marked `pre-labelled, checked` in the note column. I read those rows and corrected the labels I disagreed with. The other 20 rows are marked `cold` and I labelled them myself with no AI help.
 
+**Staff set disclosure:** For the Milestone 3 agreement check, I labelled 11 of the 30 staff posts myself (posts 1 to 10 and post 19). With my instructor's OK, Claude labelled the other 19 (posts 11 to 18 and 20 to 30) using the staff taxonomy in `data/staff_taxonomy.md`. That matters for how much the agreement rate says about me, and I come back to it in the Agreement Report.
+
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
      Don't fill these in during unit 5.
@@ -243,7 +245,7 @@ All three runs were on my laptop's CPU (Intel i5, torch 2.2.2), default settings
 | 1. Overall accuracy | ≥ 0.65 | 0.533 | 0.600 | 0.633 | MISSED |
 | 2. Lowest per-label F1 | ≥ 0.55 | 0.000 (stat_backed) | 0.000 (stat_backed) | 0.000 (stat_backed) | MISSED |
 | 3. Biggest gap between predicted and true share | ≤ 10 pts | 30 pts (hot_take) | 17 pts (stat_backed) | 23 pts (hot_take) | MISSED |
-| 4. Agreement with staff labels | ≥ 70% | (one number, not per seed) | | | see Agreement Report |
+| 4. Agreement with staff labels | ≥ 70% | 100% (30 of 30), one number for all seeds | | | MET |
 | 5. Most-confident third minus least-confident third | ≥ +0.15 | +0.80 (0.9 vs 0.1) | +0.20 (0.6 vs 0.4) | -0.30 (0.5 vs 0.8) | MISSED |
 
 The full spread across seeds:
@@ -285,7 +287,7 @@ Seed 42:
 | 1 | Overall accuracy | ≥ 0.65 on all three seeds | MISSED | Best seed was 0.633, worst was 0.533. None of the three got there. |
 | 2 | Every label F1 | ≥ 0.55 on all three seeds | MISSED | `stat_backed` was 0.000 on every seed. `hot_take` and `neutral` cleared 0.55 on all three. |
 | 3 | Balance | Every label's predicted share within 10 pts of its true share | MISSED | `stat_backed` is 17% of the test set and got 0% of predictions on every seed, so it fails by 17 points no matter what. `hot_take` was also over-predicted by 30 and 23 points on seeds 42 and 2024. |
-| 4 | Agreement with staff | ≥ 70% (21 of 30) | WAITING | Needs my agreement report. |
+| 4 | Agreement with staff | ≥ 70% (21 of 30) | MET | I matched staff on all 30 posts. It doesn't depend on seeds, so it holds across all three. |
 | 5 | Confidence | Most-sure third beats least-sure third by ≥ 0.15 | MISSED | It passed on seeds 42 (+0.80) and 7 (+0.20) but flipped on seed 2024 (-0.30), and the target has to hold on all three. |
 
 **Diagnoses**
@@ -296,7 +298,7 @@ Seed 42:
 
 **Criterion 5 (confidence): small test set, not a real pattern.** Each "third" is only 10 posts, so one or two posts flip the result. Seed 42 looked great (+0.80) and seed 2024 went backwards (-0.30). With confidence values all bunched around 0.40, the model isn't really separating sure from unsure, and 10 posts per bucket can't show it either way.
 
-**What the agreement report adds:** _(fill in after running agreement.py)_
+**What the agreement report adds:** Less than I hoped. I matched staff on all 30 posts, which says I can apply a written rule the way its authors meant it when the posts are clear. But the staff set came in clean blocks of ten per label and most posts were obvious examples, and an AI labelled 19 of my 30. So it doesn't really test the line that matters for my model, which is `neutral` vs. `hot_take` on NBA posts. I can't use it to rule out a labelling problem behind the 7 `neutral` posts called `hot_take`. What it does make less likely is that I'm sloppy with rules in general, so I still think the `stat_backed` failure is mostly a data size problem and not a labelling one.
 
 
 ---
@@ -309,48 +311,22 @@ Seed 42:
      data/staff_taxonomy.md, not your own — so every argument below is made
      from those definitions and those decision rules. -->
 
-**Agreement rate:** ___ / 30 = ___%
-
-<!-- Nobody grades this number. A 60% who argues every disagreement from the
-     stated rules beats a 95% who wrote "staff was right" nine times. Several
-     of the 30 were chosen because they're genuinely ambiguous — you should be
-     winning some of these. -->
+**Agreement rate:** 30 / 30 = 100%
 
 **Disagreements**
 
-<!-- Three lines each: the post, both labels, and who you think is right and
-     why — grounded in the staff definitions you were both applying.
+There weren't any. `agreement.py` found 30 matches and 0 disagreements, so there's nothing to adjudicate or sort into piles.
 
-     Then sort each into one of three piles:
-       (a) the rule covered it and I applied it loosely → a consistency problem
-       (b) the rule genuinely doesn't say               → a gap in the definitions
-       (c) the rule is ambiguous here and my reading is defensible → argue it.
-           This is a legitimate win.
+**Was the set easy, or is my reading of the rule tight?** Mostly easy, I think. Posts 1 to 10 all argue from a number that carries the argument (splits, percentages, a remeasured course), posts 11 to 20 are all flat confident claims, and posts 21 to 30 are all about something that just happened to the writer. Only a handful needed the decision rules:
 
-     Pile (a) is the one that matters most for your diagnosis: if you applied a
-     written rule two different ways on 30 posts, that is direct evidence about
-     what you did across your own 200. -->
-
-**1.**
-> *The post:*
->
-> *Staff said / I said:*
->
-> *My call, and why:*
->
-> *Which pile:*
-
-**2.**
-> *The post:*
->
-> *Staff said / I said:*
->
-> *My call, and why:*
->
-> *Which pile:*
+- **Post 14** ("Times are down about 3% since the shoe rules changed, so obviously the shoes are the whole story") is almost word for word the Rule 1 example, so the 3% is decoration and it's `hot_take`.
+- **Posts 17 and 18** have a year ("about 2015") and a pace ("8 minute miles"), but neither number is the reason for the claim, so Rule 1 makes them `hot_take`.
+- **Post 27** mentions leaning "about 20 degrees" in the wind, but it's describing how the run felt, not arguing anything, so it's `reaction`.
+- **Post 29** (setting every PB in shoes bought in the wrong size) could be read as a quiet jab that shoes don't matter. It's written as a "just realised" moment about the writer, so Rule 2 makes it `reaction`.
+- **Posts 5 and 10** are the ones I expected to lose. They argue from one runner and from three runners, which is a tiny sample. But the taxonomy asks whether the fact is load-bearing, not whether it's a good sample, and in both the numbers are the whole argument, so they're `analysis`. Staff agreed.
 
 **What the pattern in my disagreements tells me:**
-
+With no disagreements there's no pattern to read, so I want to be careful not to oversell this. A 100% on a clean set says the staff rules are clear and I didn't apply any of them loosely, so pile (a) is empty. It doesn't tell me much about my own 200 NBA labels. Those have messier boundaries, especially between `neutral` and `hot_take`, and 180 of them started as AI pre-labels. Also, Claude labelled 19 of these 30, so the 100% is partly a measure of the AI applying the rules, not just me. The 11 I did myself (posts 1 to 10 and 19) all matched, and that's the part I can actually claim.
 
 
 ---
@@ -368,7 +344,7 @@ Seed 42:
 | 1. Overall accuracy | ≥ 0.65 | 0.667 | 0.500 | 0.633 | MISSED |
 | 2. Lowest per-label F1 | ≥ 0.55 | 0.000 (stat_backed) | 0.000 (stat_backed) | 0.000 (stat_backed) | MISSED |
 | 3. Biggest gap between predicted and true share | ≤ 10 pts | 17 pts | 10 pts | 17 pts | MISSED |
-| 4. Agreement with staff labels | ≥ 70% | (labels didn't change, so same as before) | | | see Agreement Report |
+| 4. Agreement with staff labels | ≥ 70% | 100% (30 of 30), labels didn't change so same as before | | | MET |
 | 5. Most-confident third minus least-confident third | ≥ +0.15 | +0.50 (0.8 vs 0.3) | +0.90 (0.9 vs 0.0) | +0.20 (0.7 vs 0.5) | MET |
 
 | Measure | Seed 42 | Seed 7 | Seed 2024 | Spread |
@@ -395,7 +371,7 @@ But the overall numbers barely moved. Average accuracy across the three seeds we
 
 **Criterion 1 (accuracy ≥ 0.65).** It hit 0.667 on one seed but dropped to 0.500 on another. With only 30 test posts, one post is worth 3.3 points of accuracy, so I can't tell a real improvement from a lucky split. More data overall would help the most here too. I'd also want the extra `stat_backed` posts first, since losing all 5 of them every run caps the score.
 
-**Criterion 4 (agreement).** _(fill in after the agreement report)_
+**Criterion 4 (agreement).** This one is MET, so there's nothing to fix, but the evidence behind it is thinner than 100% sounds. The staff set was easy and an AI labelled 19 of my 30. What I'd actually want is a check on my own data: have a second person label 30 of my NBA posts, especially ones near the `neutral` / `hot_take` line, and see if we agree. That would tell me whether the model's `neutral` to `hot_take` mistakes come from my labels. I stopped here because I don't have a second labeller for my corpus, and it's outside what this unit asked for.
 
 **The gap between what I meant my labels to capture and what the model learned:**
 I meant `stat_backed` to mean "a take that is argued with numbers," but the model learned something closer to "has an opinion, so it's `hot_take`," and every seed sent 4 or 5 of the 5 `stat_backed` posts straight into `hot_take`. It learned the difference between having an opinion and not having one pretty well, but it never learned that the numbers in a post are what make it a different kind of post.
