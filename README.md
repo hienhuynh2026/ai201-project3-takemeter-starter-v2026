@@ -2,7 +2,7 @@
 
 > ### 👋 Start here
 >
-> **New to this repo? Read [RUNNING.md](RUNNING.md) first** — setup, the
+> **New to this repo? Read [RUNNING.md](RUNNING.md) first**: setup, the
 > notebook, the baseline, and what to do when something breaks.
 >
 > Once `python test.py` passes:
@@ -11,7 +11,7 @@
 > head -5 data/practice_labels.csv     # the shape your labels.csv needs
 > ```
 >
-> Then open `takemeter.ipynb` **in this folder** — in VS Code, or with
+> Then open `takemeter.ipynb` **in this folder**, in VS Code, or with
 > `jupyter notebook` if you prefer. Pick the kernel: the `.venv` inside this
 > project. Run section 1, which reports the hardware you'll be training on.
 > Everything else waits until you have data.
@@ -233,7 +233,7 @@ The baseline called all 30 posts `hot_take`. That's why it gets 0.40 accuracy (1
 
 ---
 
-## Run Log — Before
+## Run Log: Before
 
 <!-- Five criteria across three seeds. The notebook's section 6 prints the
      spread table; the Target and Verdict columns are yours. -->
@@ -337,7 +337,7 @@ With no disagreements there's no pattern to read, so I want to be careful not to
 
 **Which diagnosis pointed at it:** The model looked undertrained. With 139 training posts and batch size 16, three epochs is only 27 training steps, and the "before" model's confidence averaged around 0.40 when random guessing is 0.33, so it was close to guessing even when it was right. My first choice would have been adding more `stat_backed` posts, since too few examples is the bigger diagnosis, but I'd already used every RealGM post I collected that fit that label. Training longer was the one change I could make cleanly and test on the same data.
 
-### Run Log — After
+### Run Log: After
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
@@ -395,12 +395,12 @@ I meant `stat_backed` to mean "a take that is argued with numbers," but the mode
      SUBMISSION CHECKLIST — unit 6
 
        [ ] Baseline vs. Trained table, with your prediction written beforehand
-       [ ] Run Log — Before, five criteria across three seeds
+       [ ] Run Log: Before, five criteria across three seeds
        [ ] Confusion matrix TYPED AS A MARKDOWN TABLE
        [ ] A verdict on every criterion
        [ ] A diagnosis for every miss, using the agreement report as evidence
        [ ] Agreement Report with every disagreement adjudicated
-       [ ] One improvement, with Run Log — After
+       [ ] One improvement, with Run Log: After
        [ ] What's Still Broken
        [ ] results_three_seeds_before.json, results_three_seeds_after.json,
            baseline_results.json and

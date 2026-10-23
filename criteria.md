@@ -1,4 +1,4 @@
-# Acceptance criteria — TakeMeter
+# Acceptance criteria: TakeMeter
 
 Five criteria that say what "working" means for this classifier, written in
 unit 5 **before** anything was trained.
@@ -11,7 +11,7 @@ opinion. *"Every label has an F1 of at least 0.60 on the held-out set"* is a
 criterion.
 
 Under each, write a sentence or two on **why that number**. A reason that says
-something about your data or your taxonomy earns credit — *"I picked 0.60 F1
+something about your data or your taxonomy earns credit, *"I picked 0.60 F1
 for `reaction` because it's my smallest label and I only have about 50
 examples of it"*. A reason that could be attached to any project does not.
 
@@ -27,7 +27,7 @@ about 33%, so a target of 0.40 is barely a target. Your number should sit
 somewhere you'd honestly call useful.
 
 **Cover at least three of these five areas.** They're here as prompts, not as a
-form to fill in — a criterion that fits none of them is fine if it names a
+form to fill in. A criterion that fits none of them is fine if it names a
 number.
 
 | Area | A question it could answer |
@@ -47,7 +47,7 @@ whether you hit them:
   your biggest label, and saying so is a good reason.
 - **Unit 6 tests across three seeds, and the target has to hold across all
   three.** A target of 0.65 against results of 0.71, 0.62, 0.68 is a **miss**.
-  Pick with that in mind — it is stricter than it first sounds.
+  Pick with that in mind. It is stricter than it first sounds.
 
 ---
 
@@ -112,7 +112,7 @@ Clear-cut posts (a full stat line, or a "don't @ me" take) should be easy and co
 ---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
-     UNIT 6 — read this before you change anything above.
+     UNIT 6: read this before you change anything above.
 
      If a criterion turns out to be BROKEN rather than merely unmet, you can
      revise it, and that earns credit. But never delete or edit the original
