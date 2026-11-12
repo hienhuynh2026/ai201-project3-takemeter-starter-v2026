@@ -8,6 +8,7 @@ posts, and leave a structured record of every post behind in a log file.
     python takemeter.py                      # the 30 held-out posts in test_split.csv
     python takemeter.py --text "Luka is washed"
     python takemeter.py --input some_posts.csv
+    python takemeter.py --report             # cost and latency, read back from the log
 
 The classifier is the zero-shot model from baseline.py (facebook/bart-large-mnli)
 using the label definitions in label_definitions.txt. Everything runs locally.
@@ -173,6 +174,68 @@ def run(args, log, stats):
         print(f"{input_id:>3}  {output:<12} {scores[output]:.2f}  {duration:.2f}s")
 
 
+def percentile(values, p):
+    values = sorted(values)
+    if not values:
+        return None
+    k = (len(values) - 1) * p / 100
+    lo, hi = int(k), min(int(k) + 1, len(values) - 1)
+    return values[lo] + (values[hi] - values[lo]) * (k - lo)
+
+
+def report(log_path, last=None):
+    """Read the log back and summarise cost and latency per input source."""
+    path = Path(log_path)
+    if not path.exists():
+        print(f"No log at {path}. Run `python takemeter.py` first.", file=sys.stderr)
+        return 1
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    runs = [r for r in records if r["event"] == "run"]
+    if last:
+        runs = runs[-last:]
+    keep = {r["run_id"] for r in runs}
+    preds = [r for r in records if r["event"] == "prediction" and r["run_id"] in keep]
+
+    def stat_line(name, values, unit="s"):
+        values = [v for v in values if v is not None]
+        if not values:
+            return f"  {name:<22} n/a"
+        mean = sum(values) / len(values)
+        return (f"  {name:<22} mean {mean:8.2f}{unit}  min {min(values):8.2f}{unit}  "
+                f"max {max(values):8.2f}{unit}")
+
+    failed = [r for r in runs if r["status"] != "ok"]
+    print(f"{path}: {len(runs)} runs ({len(failed)} failed), {len(preds)} post records\n")
+
+    by_input = {}
+    for r in runs:
+        if r["status"] == "ok":
+            by_input.setdefault(r["input"], []).append(r)
+    for source, group in by_input.items():
+        print(f"Successful runs on {source}: {len(group)} (posts per run: "
+              f"{sorted({g['n_inputs'] for g in group})})")
+        print(stat_line("wall per run", [g["wall_s"] for g in group]))
+        print(stat_line("CPU per run", [g["cpu_s"] for g in group]))
+        print(stat_line("model load", [g["model_load_s"] for g in group]))
+        print(stat_line("inference total", [g["inference_s"] for g in group]))
+        print(stat_line("peak RSS", [g["peak_rss_mb"] for g in group], " MB"))
+        ids = {g["run_id"] for g in group}
+        lat = [p["duration_s"] for p in preds if p["run_id"] in ids and p["status"] == "ok"]
+        if lat:
+            print(f"  {'per-post latency':<22} p50 {percentile(lat, 50):.2f}s  "
+                  f"p95 {percentile(lat, 95):.2f}s  max {max(lat):.2f}s  (n={len(lat)})")
+        print()
+
+    for r in failed:
+        print(f"  failed run {r['run_id']} at {r['timestamp']}: "
+              f"{r.get('error_stage')}: {r.get('error', '')[:100]}")
+    statuses = {}
+    for p in preds:
+        statuses[p["status"]] = statuses.get(p["status"], 0) + 1
+    print(f"\nPost records by status: {statuses}")
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run TakeMeter and log every post.")
     parser.add_argument("--input", default=DEFAULT_INPUT, help="CSV with a 'text' column")
@@ -180,7 +243,14 @@ def main():
     parser.add_argument("--definitions", default="label_definitions.txt")
     parser.add_argument("--model", default=ZERO_SHOT_MODEL)
     parser.add_argument("--log", default=DEFAULT_LOG)
+    parser.add_argument("--report", action="store_true",
+                        help="don't classify; summarise cost and latency from the log")
+    parser.add_argument("--last", type=int, default=None,
+                        help="with --report: only the last N runs")
     args = parser.parse_args()
+
+    if args.report:
+        sys.exit(report(args.log, args.last))
 
     log = RunLog(args.log, uuid.uuid4().hex[:8])
     wall0, cpu0 = time.perf_counter(), time.process_time()
