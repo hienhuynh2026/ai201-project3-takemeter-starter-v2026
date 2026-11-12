@@ -411,6 +411,23 @@ I meant `stat_backed` to mean "a take that is argued with numbers," but the mode
      Do not delete and recreate this repository.
      ═════════════════════════════════════════════════════════════════════ -->
 
+
+---
+
+## Capstone
+
+**The Shape**
+
+Shape A: Deploy and instrument. The system is TakeMeter (Project 3). Until now it was a notebook plus three scripts that each did one job and printed to the screen, so nothing was left behind to show what it did. I'm adding `takemeter.py`, one command that loads the classifier, labels a batch of posts (the 30 held-out posts in `test_split.csv` by default, one post with `--text`, or any CSV with `--input`), and writes a structured record for every post and every run to `logs/takemeter.jsonl`. Each post record has a timestamp, the input, the predicted label, the score, and how long it took. Each run record has model load time, compute seconds, and peak memory. Failed runs (an empty post, a missing file, a model that won't load) write a record too.
+
+**Which model it runs:** the fine-tuned DistilBERT from Project 3 was never saved. The notebook trains it in memory and `takemeter_out/` is gitignored. So `takemeter.py` runs the zero-shot classifier, `facebook/bart-large-mnli` with my label definitions from `label_definitions.txt`, the same one `baseline.py` scores. That is the part of TakeMeter that can be run from a clean checkout today.
+
+**Run path: Path B, local with logs.** TakeMeter loads a local model that needs about 2 GB of RAM (`bart-large-mnli` peaks around 1.8 GB and training around 2.1 GB), which is about four times the free hosting tier's 512 MB, so it runs locally. It also isn't a web app: nothing in it listens on a port. The start command and environment are in [RUNNING.md](RUNNING.md).
+
+**Out of scope:** I'm not hosting it anywhere, and I'm not adding a web interface or endpoint (that would be a new capability, Shape C, not deployment). I'm not retraining or saving the fine-tuned model, and I'm not changing my labels or my data. The capstone is the operational layer around the classifier that already exists.
+
+**Stretch goals:** none declared.
+
 ---
 
 📖 **How to run this project: [RUNNING.md](RUNNING.md)**
