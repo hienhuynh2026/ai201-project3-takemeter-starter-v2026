@@ -8,6 +8,74 @@ nothing hosted.
 
 ---
 
+## Run TakeMeter (capstone, Path B: local with logs)
+
+TakeMeter runs on your own machine. It is not hosted: the classifier needs
+about 2 GB of RAM, four times a free hosting tier's 512 MB.
+
+**From a clean checkout:**
+
+```bash
+git clone https://github.com/hienhuynh2026/ai201-project3-takemeter-starter-v2026.git
+cd ai201-project3-takemeter-starter-v2026
+python3.12 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python test.py                     # should end "10 passed, 0 failed"
+```
+
+**The start command:**
+
+```bash
+python takemeter.py
+```
+
+This loads the classifier, labels the 30 held-out posts in `test_split.csv`,
+and appends one JSON record per post plus one per run to
+`logs/takemeter.jsonl`. The first run downloads the model (about 1.6 GB), so
+expect it to take several minutes. After that the model is cached in
+`~/.cache/huggingface/`.
+
+Other forms of the same command:
+
+| Command | What it does |
+|---|---|
+| `python takemeter.py --text "Luka is washed"` | Classify one post |
+| `python takemeter.py --input posts.csv` | Classify any CSV with a `text` column (a `label` column, if present, is logged as `gold`) |
+| `python takemeter.py --report` | Read the log back: runs, failures, wall and CPU seconds, model load, per-post latency, peak memory |
+| `python takemeter.py --report --last 10` | The same, for the last 10 runs only |
+
+**What gets logged.** Each line of `logs/takemeter.jsonl` is one record:
+
+- `event: "prediction"`, one per post: `timestamp`, `run_id`, `input_id`,
+  `input` (first 280 characters), `input_chars`, `output` (the label),
+  `score`, `scores` (all three labels), `gold`, `correct`, `duration_s`,
+  `model`, and `status`: `ok`, `rejected` (empty post) or `error` (inference
+  raised an exception).
+- `event: "run"`, one per run, written even when the run fails: `status`
+  (`ok` or `error`), `error_stage` and `error` on failure (`read_input`,
+  `load_definitions`, `load_model`), counts (`n_inputs`, `n_ok`,
+  `n_rejected`, `n_error`), `model_load_s`, `inference_s`, `wall_s`,
+  `cpu_s`, `peak_rss_mb`, and the Python / torch / transformers versions.
+
+A run exits with code 0 if it finished (even if some posts were rejected) and
+1 if it failed as a whole.
+
+**The environment it needs:**
+
+| Need | Value |
+|---|---|
+| Python | 3.12 (tested on 3.12.15). 3.11 and 3.13 are allowed by `test.py`; 3.14 is not |
+| Dependencies | Exact pins in `requirements.txt`: pandas 2.3.3, transformers 4.57.6, datasets 3.6.0, accelerate 1.15.0, torch 2.2.2, numpy 1.26.4, scikit-learn 1.9.1 |
+| Model | `facebook/bart-large-mnli`, downloaded on first run, about 1.6 GB on disk (1.5 GB in the Hugging Face cache) |
+| Fine-tuned model | None. The notebook's fine-tuned DistilBERT is trained in memory and never saved, so `takemeter.py` uses the zero-shot model. The notebook additionally downloads `distilbert-base-uncased` (about 256 MB) |
+| RAM | About 1.8 GB peak for `takemeter.py` (measured `peak_rss_mb` is in every run record); about 2.1 GB peak for notebook training |
+| Disk | About 9 GB free (torch plus the model cache) |
+| Hardware | CPU only. Tested on an Intel Core i5-8257U (4 cores), 16 GB RAM, macOS |
+| Accounts, keys, environment variables | None |
+
+---
+
 ## Before your first class
 
 One setup, one virtual environment, everything in this repo. The
@@ -228,6 +296,8 @@ README has a block to fill in for each one.
 | Command | What it does |
 |---|---|
 | `python test.py` | Checks your environment |
+| `python takemeter.py` | **The system running**: classify the held-out posts and log every one — **capstone** |
+| `python takemeter.py --report` | Cost and latency, read back from the log — **capstone** |
 | `python baseline.py` | The zero-shot baseline on your held-out posts — **unit 6** |
 | `python agreement.py` | Your labels vs. the staff set — **unit 6** |
 | `python baseline.py --help` | All the options |
