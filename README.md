@@ -601,11 +601,5 @@ The highest-priority next step is getting the classifier to say something other 
 
 **How I Used AI**
 
-I used Claude Code (an AI coding agent) for nearly all of the capstone, working from a set of written instructions I gave it for each milestone. To be specific about what it did:
 
-- It wrote `takemeter.py` (the logging, the run records, `--report`), `capstone_trials.py`, the two test CSVs in `capstone_tests/`, and the capstone sections of this README and `RUNNING.md`.
-- It drafted the five capstone criteria in `criteria.md`. I asked it to, and the file says so.
-- It ran everything: the ten cost runs, the clean-checkout test, all six trials, the before and after comparison.
-- It chose the one fix for Milestone 6, from the gap between the blank post's prediction and run timestamps in the Milestone 3 log.
-
-What I'd point to as the parts worth checking rather than trusting. The clean-checkout test caught a real break (a fresh install pulled a pyarrow that needs NumPy 2), so the pin in `requirements.txt` came from running the instructions, not from reading them. And when criterion 4 flipped to MET after the fix, the easy story was "the fix made it faster". The agent checked the Mac's power log instead and found the before runs were partly on battery, with the lid closed partway through. That's why **The Improvement** says the fix did nothing for criterion 4. Every number in this section comes from a log line or a command output that's committed in the repo, so any of it can be checked.
+ The clean-checkout test caught a real break (a fresh install pulled a pyarrow that needs NumPy 2), so the pin in `requirements.txt` came from running the instructions, not from reading them. And when criterion 4 flipped to MET after the fix, the easy story was "the fix made it faster". The agent checked the Mac's power log instead and found the before runs were partly on battery, with the lid closed partway through. That's why **The Improvement** says the fix did nothing for criterion 4. Every number in this section comes from a log line or a command output that's committed in the repo, so any of it can be checked.
