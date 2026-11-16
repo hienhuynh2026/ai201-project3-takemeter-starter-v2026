@@ -66,7 +66,7 @@ A run exits with code 0 if it finished (even if some posts were rejected) and
 | Need | Value |
 |---|---|
 | Python | 3.12 (tested on 3.12.15). 3.11 and 3.13 are allowed by `test.py`; 3.14 is not |
-| Dependencies | Exact pins in `requirements.txt`: pandas 2.3.3, transformers 4.57.6, datasets 3.6.0, accelerate 1.15.0, torch 2.2.2, numpy 1.26.4, scikit-learn 1.9.1 |
+| Dependencies | Exact pins in `requirements.txt`: pandas 2.3.3, transformers 4.57.6, datasets 3.6.0, accelerate 1.15.0, torch 2.2.2, numpy 1.26.4, pyarrow 19.0.1, scikit-learn 1.9.1 |
 | Model | `facebook/bart-large-mnli`, downloaded on first run, about 1.6 GB on disk (1.5 GB in the Hugging Face cache) |
 | Fine-tuned model | None. The notebook's fine-tuned DistilBERT is trained in memory and never saved, so `takemeter.py` uses the zero-shot model. The notebook additionally downloads `distilbert-base-uncased` (about 256 MB) |
 | RAM | About 1.8 GB peak for `takemeter.py` (measured `peak_rss_mb` is in every run record); about 2.1 GB peak for notebook training |
