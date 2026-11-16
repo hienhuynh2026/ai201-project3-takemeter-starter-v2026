@@ -414,20 +414,22 @@ I meant `stat_backed` to mean "a take that is argued with numbers," but the mode
 
 ---
 
+📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+
+---
+
 ## Capstone
 
 **The Shape**
 
-Shape A: Deploy and instrument. The system is TakeMeter (Project 3). Until now it was a notebook plus three scripts that each did one job and printed to the screen, so nothing was left behind to show what it did. I'm adding `takemeter.py`, one command that loads the classifier, labels a batch of posts (the 30 held-out posts in `test_split.csv` by default, one post with `--text`, or any CSV with `--input`), and writes a structured record for every post and every run to `logs/takemeter.jsonl`. Each post record has a timestamp, the input, the predicted label, the score, and how long it took. Each run record has model load time, compute seconds, and peak memory. Failed runs (an empty post, a missing file, a model that won't load) write a record too.
+Shape A, deploy and instrument. Until now TakeMeter was a notebook plus three scripts that each printed to the screen and left nothing behind, so there was no way to look back at what it did. The capstone adds `takemeter.py`, one command that loads the classifier, labels a batch of posts (the 30 held-out posts in `test_split.csv` by default, one post with `--text`, or any CSV with `--input`), and appends a JSON record for every post and every run to `logs/takemeter.jsonl`. Post records carry the timestamp, the input, the predicted label, the score, and how long it took. Run records carry model load time, wall and CPU seconds, and peak memory. Runs that go wrong (an empty post, a missing file, a model that won't load) write a record too, and `python takemeter.py --report` reads the log back into cost and latency numbers.
 
-**Which model it runs:** the fine-tuned DistilBERT from Project 3 was never saved. The notebook trains it in memory and `takemeter_out/` is gitignored. So `takemeter.py` runs the zero-shot classifier, `facebook/bart-large-mnli` with my label definitions from `label_definitions.txt`, the same one `baseline.py` scores. That is the part of TakeMeter that can be run from a clean checkout today.
+The classifier it runs is the zero-shot one, `facebook/bart-large-mnli` with my label definitions from `label_definitions.txt` (the same setup `baseline.py` scores). The fine-tuned DistilBERT from Project 3 was trained in memory and never saved (`takemeter_out/` is gitignored and empty), so the zero-shot model is the part of TakeMeter that actually runs from a clean checkout.
 
-**Run path: Path B, local with logs.** TakeMeter loads a local model that needs about 2 GB of RAM (`bart-large-mnli` peaks around 1.8 GB and training around 2.1 GB), which is about four times the free hosting tier's 512 MB, so it runs locally. It also isn't a web app: nothing in it listens on a port. The start command and environment are in [RUNNING.md](RUNNING.md).
+Run path is Path B, local with logs. The model needs about 2 GB of RAM, roughly four times a free hosting tier's 512 MB, and nothing in TakeMeter listens on a port anyway. The start command and environment are in [RUNNING.md](RUNNING.md).
 
-**Out of scope:** I'm not hosting it anywhere, and I'm not adding a web interface or endpoint (that would be a new capability, Shape C, not deployment). I'm not retraining or saving the fine-tuned model, and I'm not changing my labels or my data. The capstone is the operational layer around the classifier that already exists.
+**Out of Scope**
 
-**Stretch goals:** none declared.
-
----
-
-📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+- Hosting. No Render, no server, no web page or HTTP endpoint (an endpoint would be a new capability, Shape C, not this).
+- Retraining or saving the fine-tuned DistilBERT. The capstone wraps the classifier that already runs; it doesn't build a new one.
+- Changing my labels, label definitions, or data. The 0.40 accuracy from Unit 6 is a known weakness, and fixing it would be a different project.

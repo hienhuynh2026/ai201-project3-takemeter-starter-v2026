@@ -296,8 +296,8 @@ README has a block to fill in for each one.
 | Command | What it does |
 |---|---|
 | `python test.py` | Checks your environment |
-| `python takemeter.py` | **The system running**: classify the held-out posts and log every one — **capstone** |
-| `python takemeter.py --report` | Cost and latency, read back from the log — **capstone** |
+| `python takemeter.py` | **The system running**: classify the held-out posts and log every one (**capstone**) |
+| `python takemeter.py --report` | Cost and latency, read back from the log (**capstone**) |
 | `python baseline.py` | The zero-shot baseline on your held-out posts — **unit 6** |
 | `python agreement.py` | Your labels vs. the staff set — **unit 6** |
 | `python baseline.py --help` | All the options |
