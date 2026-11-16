@@ -141,3 +141,39 @@ Clear-cut posts (a full stat line, or a "don't @ me" take) should be easy and co
      A number you missed stays where it is, gets diagnosed, and gets a fix
      attempted. That's where the points are.
      ───────────────────────────────────────────────────────────────────────── -->
+
+---
+
+# Capstone criteria: TakeMeter, running
+
+Written and committed before any capstone trial was run. Drafted by the AI agent at my request (see **How I Used AI** in the README). Criteria 1 to 4 test the extension (`takemeter.py` and its log); 2 and 3 test bad paths. Each is checked three times, and a target only counts as MET if it holds on all three.
+
+## 1. Every post leaves a complete record
+
+One run of `python takemeter.py` on the 30 posts in `test_split.csv` writes exactly 30 `prediction` records with `status: "ok"`, each with a `timestamp`, a non-empty `input`, an `output` that is one of `hot_take`, `neutral`, `stat_backed`, and a `duration_s` above 0, plus exactly one `run` record with `n_ok: 30`. Target: 30 of 30 post records and 1 run record, on each of the 3 runs.
+
+**Why this target:** the cost and accuracy numbers in the README are computed by reading this log back. If even one post goes missing or gets logged without a label, those numbers are wrong and nothing would tell me. So the only acceptable count is all of them.
+
+## 2. A bad input fails fast and says why
+
+Three bad inputs: `--input` pointing at a file that doesn't exist, `--input` pointing at a CSV with no `text` column, and `--text ""`. For each one the command must (a) write a `run` record that names the failure (`status: "error"` with `error_stage: "read_input"` for the two file errors; a `rejected` prediction record and `n_rejected: 1` for the empty post), (b) exit with code 1 for the two file errors and 0 for the empty post, and (c) finish in under 2.0 seconds of wall time measured from the shell. Target: 3 of 3 bad inputs pass all three parts, on each of the 3 trials.
+
+**Why this target:** none of these inputs ever needs the model, so there's nothing heavy to wait for. Starting Python and importing pandas is well under a second. If someone mistypes a filename, they should hear about it about as fast as `ls` would tell them. The Milestone 3 log already shows the missing-file run taking 5.8 s, so I expect this one to miss as written. The number is where it should be, not where the code currently is.
+
+## 3. One blank row doesn't sink a batch
+
+A CSV of 10 posts where 3 rows are blank or whitespace only. The run must classify the 7 real posts (`status: "ok"`), write a `rejected` record for each of the 3 blank rows, end with a `run` record of `status: "ok"`, `n_ok: 7`, `n_rejected: 3`, and exit with code 0. Target: exactly those counts and that exit code, on each of the 3 runs.
+
+**Why this target:** scraped forum posts come with empty rows (deleted posts, image-only posts). A batch tool that throws away 7 good posts because of 3 empty ones is useless on real data, and one that silently skips them makes the counts in the log lie.
+
+## 4. A 30-post run stays inside its measured budget
+
+One run of `python takemeter.py` on `test_split.csv` finishes in at most 60.0 s of wall time (`wall_s` in the run record), with a per-post p95 latency of at most 3.0 s and `peak_rss_mb` at most 1,800 MB. Target: all three limits, on each of the 3 runs.
+
+**Why this target:** these are the numbers in the README and RUNNING.md (54.9 s mean, 2.48 s p95, 1.75 GB). 60 s gives about 10% headroom over the mean, and 1,800 MB is the figure RUNNING.md tells people they need. One of the ten Milestone 3 runs took 61.6 s, so this isn't guaranteed to hold. If it doesn't, the cost I'm reporting is too optimistic.
+
+## 5. The labels are worth reading
+
+At least 15 of the 30 held-out posts (0.50) get the same label as `gold` (`correct: true` in the post records), on each of the 3 runs.
+
+**Why this target:** with three labels, guessing gets about 10 of 30. The zero-shot baseline in Unit 6 got 12 of 30 (0.40) and never got a `neutral` or `stat_backed` post right. Running it from a clean command with logging doesn't make it better by itself, and this criterion is here so the capstone doesn't confuse "it runs and logs" with "its output is useful". 0.50 is the lowest number where more than half of what the log says is right.
