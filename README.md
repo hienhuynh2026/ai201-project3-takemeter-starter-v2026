@@ -491,6 +491,13 @@ Successful runs on test_split.csv: 10 (posts per run: [30])
 
 So one run of TakeMeter on 30 posts costs **54.9 s of wall time, 177.1 s of CPU time, and 1.75 GB of memory at peak**. Per post that's about 1.83 s of wall time (54.87 / 30) or 1.46 s if you leave out the one-time model load (43.67 / 30). CPU time is about 3.2 times wall time because the four cores work in parallel. Model load is 18% of the run (9.93 / 54.87); the rest is inference, which runs one forward pass per label, three per post.
 
+What 100 people a day would cost. There are no API fees, so the dollar cost is $0 plus electricity, which I didn't measure and won't guess at. The real cost is machine time, and it depends a lot on how people use it:
+
+- **100 people each run one 30-post batch.** 100 × 54.87 s = 5,487 s, about 1 hour 31 minutes of wall time, and 100 × 177.1 s = 17,710 s, about 4.9 CPU-hours. One run already keeps all 4 cores busy (CPU is 3.2 times wall), so running two at once doesn't finish sooner, and at 1.75 GB each, about 8 at once would fill the 16 GB. In practice it's a queue: if everyone showed up at the same time, the last person would wait about an hour and a half.
+- **100 people each check one post with `--text`.** Every one of those is a new process that loads the model before it classifies anything. The one `--text` run I measured (from the clean-checkout test) took 18.86 s wall and 19.44 s CPU, against 1.83 s per post inside a batch. 100 × 18.86 s = 1,886 s, about 31 minutes. Fine at that size, but it's 10 times the cost per post.
+- **100 people each check 30 posts one at a time.** 3,000 × 18.86 s = 56,580 s, about 15.7 hours of wall time. That still technically fits in a day on one laptop, with nothing else running. This is the case where keeping one process alive with the model loaded would pay for itself, and it's the first thing I'd build if TakeMeter were hosted. Hosting is out of scope, so it isn't built.
+- **Log storage.** One 30-post run writes 16,912 bytes to the log (run `254b78e8`). 100 runs a day is about 1.7 MB a day, roughly 620 MB a year. Nothing rotates the log, so this grows forever, but it's small.
+
 **Run Log and Verdicts**
 
 I ran `python capstone_trials.py --trials 3 --log logs/trials_before.jsonl --out trials_before.json`. Each trial runs `takemeter.py` as a fresh process, the same way I would by hand: one normal run on `test_split.csv` (criteria 1, 4 and 5), three bad inputs (criterion 2) and the 10-row file with 3 blank rows (criterion 3). No code changed between trials. A criterion is MET only if it held on all three.
@@ -579,3 +586,26 @@ What the fix actually did. Criterion 2 went from 0/9 to 9/9 bad inputs inside th
 What it didn't do, even though the table makes it look that way. Criterion 4 flipped to MET, but the fix had nothing to do with it. On a normal run the model loads, torch is already imported, and the new code takes the same path the old code did. The 30-post runs got faster (41.7 to 44.5 s, against 51.3 to 64.6 s before and a 54.9 s average in Milestone 3) because the Mac was plugged in with the lid open this time, not because of anything I changed. I'm reporting criterion 4 as MET because it held on three trials, but I wouldn't trust it on battery. It's a real result about the machine, not an improvement to TakeMeter.
 
 Trade-offs. A run that fails before loading the model now logs `"torch_threads": null` instead of 4, so that field only means something on runs that classified posts. And `importlib.metadata` reports what's installed, not what got imported; if two copies of torch were on the path those could differ. Neither seems likely to matter here, and both are visible in the log if they ever do.
+
+**What's Still Broken**
+
+- **The labels.** This is the big one. On the 30 held-out posts the classifier says `hot_take` every single time, so 12/30 correct is just the number of posts that happen to be hot takes. Criterion 5 missed on every trial and the log makes the reason plain: across all three logs (`logs/takemeter.jsonl`, `logs/trials_before.jsonl`, `logs/trials_after.jsonl`) there are 522 successful predictions and every one of them is `hot_take`. TakeMeter is well instrumented, fails cleanly and stays inside its budget, but right now the thing it measures isn't worth reading.
+- **Criterion 4 depends on the power cable.** On battery the 30-post run went to 64.6 s and missed; on AC it came in at 41.7 to 44.5 s. The budget has room on AC and none on battery, and I didn't test enough battery runs to say how often it would miss.
+- **Every run pays for the model load.** 6 to 19 s per process, plus a slow first post while torch warms up (6.18 s in Milestone 3, against a 1.38 s median). One post at a time is 10 times more expensive than a batch.
+- **The log never rotates** and holds the first 280 characters of every post it has seen. Fine for test data, not fine for anything posted by real people.
+- **Small things.** Bad inputs still take 0.6 s because pandas loads before the file is checked; `torch_threads` is `null` on runs that never loaded the model.
+
+Why I stopped here: Milestone 6 allowed one fix, and I spent it on the miss whose cause I could prove from the log and fix without touching anything else. Fixing the labels means changing the label definitions, swapping in the fine-tuned DistilBERT from Project 3, or both, and all of that is in **Out of Scope** for this capstone. Changing them mid-test would also have meant the "before" numbers no longer describe the system I was testing.
+
+The highest-priority next step is getting the classifier to say something other than `hot_take`, starting by running the fine-tuned DistilBERT from Project 3 through `takemeter.py` on the same 30 posts and checking criterion 5 against it. If that clears 15/30 on all three trials, everything else in this section is polish; if it doesn't, the label definitions themselves need rewriting before any of the logging, timing or cost work is worth much.
+
+**How I Used AI**
+
+I used Claude Code (an AI coding agent) for nearly all of the capstone, working from a set of written instructions I gave it for each milestone. To be specific about what it did:
+
+- It wrote `takemeter.py` (the logging, the run records, `--report`), `capstone_trials.py`, the two test CSVs in `capstone_tests/`, and the capstone sections of this README and `RUNNING.md`.
+- It drafted the five capstone criteria in `criteria.md`. I asked it to, and the file says so.
+- It ran everything: the ten cost runs, the clean-checkout test, all six trials, the before and after comparison.
+- It chose the one fix for Milestone 6, from the gap between the blank post's prediction and run timestamps in the Milestone 3 log.
+
+What I'd point to as the parts worth checking rather than trusting. The clean-checkout test caught a real break (a fresh install pulled a pyarrow that needs NumPy 2), so the pin in `requirements.txt` came from running the instructions, not from reading them. And when criterion 4 flipped to MET after the fix, the easy story was "the fix made it faster". The agent checked the Mac's power log instead and found the before runs were partly on battery, with the lid closed partway through. That's why **The Improvement** says the fix did nothing for criterion 4. Every number in this section comes from a log line or a command output that's committed in the repo, so any of it can be checked.
