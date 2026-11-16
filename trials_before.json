@@ -1,0 +1,200 @@
+[
+  {
+    "c1": {
+      "pass": true,
+      "complete_post_records": 30,
+      "post_records": 30,
+      "run_records": 1,
+      "n_ok": 30,
+      "run_id": "3cd343a0"
+    },
+    "c4": {
+      "pass": false,
+      "wall_s": 64.574,
+      "p95_s": 2.85,
+      "peak_rss_mb": 1751.9,
+      "model_load_s": 9.681,
+      "cpu_s": 189.31,
+      "run_id": "3cd343a0"
+    },
+    "c5": {
+      "pass": false,
+      "correct": 12,
+      "of": 30,
+      "run_id": "3cd343a0"
+    },
+    "c2": {
+      "pass": false,
+      "passed": 0,
+      "inputs": [
+        {
+          "input": "missing_file",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 6.29,
+          "logged_wall_s": 5.625,
+          "run_id": "dcc900ad"
+        },
+        {
+          "input": "no_text_column",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 4.36,
+          "logged_wall_s": 3.861,
+          "run_id": "7c91ea88"
+        },
+        {
+          "input": "empty_text",
+          "pass": false,
+          "failure_named": true,
+          "exit": 0,
+          "shell_wall_s": 4.7,
+          "logged_wall_s": 4.303,
+          "run_id": "615683c1"
+        }
+      ]
+    },
+    "c3": {
+      "pass": true,
+      "ok_records": 7,
+      "rejected_records": 3,
+      "run_status": "ok",
+      "exit": 0,
+      "run_id": "3b0a520f"
+    }
+  },
+  {
+    "c1": {
+      "pass": true,
+      "complete_post_records": 30,
+      "post_records": 30,
+      "run_records": 1,
+      "n_ok": 30,
+      "run_id": "91aa6fb8"
+    },
+    "c4": {
+      "pass": true,
+      "wall_s": 59.726,
+      "p95_s": 2.91,
+      "peak_rss_mb": 1749.5,
+      "model_load_s": 12.069,
+      "cpu_s": 176.373,
+      "run_id": "91aa6fb8"
+    },
+    "c5": {
+      "pass": false,
+      "correct": 12,
+      "of": 30,
+      "run_id": "91aa6fb8"
+    },
+    "c2": {
+      "pass": false,
+      "passed": 0,
+      "inputs": [
+        {
+          "input": "missing_file",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 5.21,
+          "logged_wall_s": 4.609,
+          "run_id": "1727754c"
+        },
+        {
+          "input": "no_text_column",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 3.26,
+          "logged_wall_s": 2.757,
+          "run_id": "82c1df5a"
+        },
+        {
+          "input": "empty_text",
+          "pass": false,
+          "failure_named": true,
+          "exit": 0,
+          "shell_wall_s": 2.6,
+          "logged_wall_s": 2.212,
+          "run_id": "0c5a57ad"
+        }
+      ]
+    },
+    "c3": {
+      "pass": true,
+      "ok_records": 7,
+      "rejected_records": 3,
+      "run_status": "ok",
+      "exit": 0,
+      "run_id": "e06a6d5f"
+    }
+  },
+  {
+    "c1": {
+      "pass": true,
+      "complete_post_records": 30,
+      "post_records": 30,
+      "run_records": 1,
+      "n_ok": 30,
+      "run_id": "d7d64e91"
+    },
+    "c4": {
+      "pass": true,
+      "wall_s": 51.271,
+      "p95_s": 2.54,
+      "peak_rss_mb": 1748.5,
+      "model_load_s": 7.759,
+      "cpu_s": 166.667,
+      "run_id": "d7d64e91"
+    },
+    "c5": {
+      "pass": false,
+      "correct": 12,
+      "of": 30,
+      "run_id": "d7d64e91"
+    },
+    "c2": {
+      "pass": false,
+      "passed": 0,
+      "inputs": [
+        {
+          "input": "missing_file",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 5.68,
+          "logged_wall_s": 5.071,
+          "run_id": "41e213a6"
+        },
+        {
+          "input": "no_text_column",
+          "pass": false,
+          "failure_named": true,
+          "exit": 1,
+          "shell_wall_s": 4.29,
+          "logged_wall_s": 3.737,
+          "run_id": "6b042d4b"
+        },
+        {
+          "input": "empty_text",
+          "pass": false,
+          "failure_named": true,
+          "exit": 0,
+          "shell_wall_s": 2.5,
+          "logged_wall_s": 2.087,
+          "run_id": "25023c73"
+        }
+      ]
+    },
+    "c3": {
+      "pass": true,
+      "ok_records": 7,
+      "rejected_records": 3,
+      "run_status": "ok",
+      "exit": 0,
+      "run_id": "d45e2fad"
+    }
+  }
+]

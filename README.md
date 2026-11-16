@@ -490,3 +490,46 @@ Successful runs on test_split.csv: 10 (posts per run: [30])
 ```
 
 So one run of TakeMeter on 30 posts costs **54.9 s of wall time, 177.1 s of CPU time, and 1.75 GB of memory at peak**. Per post that's about 1.83 s of wall time (54.87 / 30) or 1.46 s if you leave out the one-time model load (43.67 / 30). CPU time is about 3.2 times wall time because the four cores work in parallel. Model load is 18% of the run (9.93 / 54.87); the rest is inference, which runs one forward pass per label, three per post.
+
+**Run Log and Verdicts**
+
+I ran `python capstone_trials.py --trials 3 --log logs/trials_before.jsonl --out trials_before.json`. Each trial runs `takemeter.py` as a fresh process, the same way I would by hand: one normal run on `test_split.csv` (criteria 1, 4 and 5), three bad inputs (criterion 2) and the 10-row file with 3 blank rows (criterion 3). No code changed between trials. A criterion is MET only if it held on all three.
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Every post leaves a complete record | 30/30 complete prediction records and 1 run record with n_ok 30 | 30/30, 1 run record | 30/30, 1 run record | 30/30, 1 run record | MET |
+| 2. A bad input fails fast and says why | 3/3 bad inputs named, right exit code, under 2.0 s | 0/3 (named and right exit on all 3, but 6.29 s, 4.36 s, 4.70 s) | 0/3 (5.21 s, 3.26 s, 2.60 s) | 0/3 (5.68 s, 4.29 s, 2.50 s) | MISSED |
+| 3. One blank row doesn't sink a batch | 7 ok, 3 rejected, run ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | MET |
+| 4. A 30-post run stays inside its measured budget | wall ≤ 60.0 s, p95 ≤ 3.0 s, peak ≤ 1800 MB | 64.57 s, 2.85 s, 1751.9 MB | 59.73 s, 2.91 s, 1749.5 MB | 51.27 s, 2.54 s, 1748.5 MB | MISSED |
+| 5. The labels are worth reading | at least 15/30 correct | 12/30 | 12/30 | 12/30 | MISSED |
+
+The times in row 2 are measured from the shell (missing file, no text column, empty post, in that order). The raw log lines behind each row are below. Every line in `logs/trials_before.jsonl` is written by `RunLog.write()` in `takemeter.py`; the function named is the one that calls it.
+
+Criterion 1, run 1. A prediction record from `run()` in `takemeter.py` (one of 30) and the run record from `main()` in `takemeter.py`:
+
+```json
+{"timestamp": "2026-11-16T02:46:23.400+00:00", "run_id": "3cd343a0", "event": "prediction", "input_id": 0, "input": "I like Kyrie on this Dallas team but he doesn't match the timeline. If Dallas gets a decent offer that meshes more with Flagg (a younger player, picks or both) they should move him, imo.", "input_chars": 186, "model": "facebook/bart-large-mnli", "status": "ok", "output": "hot_take", "score": 0.8415, "scores": {"hot_take": 0.8415, "stat_backed": 0.1068, "neutral": 0.0517}, "gold": "hot_take", "correct": true, "duration_s": 1.906}
+{"timestamp": "2026-11-16T02:47:15.265+00:00", "run_id": "3cd343a0", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 9.681, "inference_s": 53.762, "wall_s": 64.574, "cpu_s": 189.31, "peak_rss_mb": 1751.9, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+Criterion 2, run 1. The run records from `main()` in `takemeter.py` for the missing file and the CSV with no text column, then the rejected prediction from `run()` and the run record from `main()` for `--text ""`. Every failure is named correctly. What misses is the time: `wall_s` is 5.6 s, 3.9 s and 4.3 s, and the shell times that `trial()` in `capstone_trials.py` measured around the whole process (in `trials_before.json`) are 6.29 s, 4.36 s and 4.70 s:
+
+```json
+{"timestamp": "2026-11-16T02:47:22.113+00:00", "run_id": "dcc900ad", "event": "run", "status": "error", "error_stage": "read_input", "error": "No file at capstone_tests/this_file_does_not_exist.csv", "input": "capstone_tests/this_file_does_not_exist.csv", "model": "facebook/bart-large-mnli", "n_inputs": 0, "n_ok": 0, "n_rejected": 0, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 5.625, "cpu_s": 5.276, "peak_rss_mb": 220.6, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:47:26.536+00:00", "run_id": "7c91ea88", "event": "run", "status": "error", "error_stage": "read_input", "error": "capstone_tests/no_text_column.csv has no 'text' column (found: post, label)", "input": "capstone_tests/no_text_column.csv", "model": "facebook/bart-large-mnli", "n_inputs": 0, "n_ok": 0, "n_rejected": 0, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 3.861, "cpu_s": 4.615, "peak_rss_mb": 221.2, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:47:27.005+00:00", "run_id": "615683c1", "event": "prediction", "input_id": 0, "input": "", "input_chars": 0, "model": "facebook/bart-large-mnli", "status": "rejected", "error": "empty post", "output": null, "score": null, "gold": null, "duration_s": 0.0}
+{"timestamp": "2026-11-16T02:47:47.475+00:00", "run_id": "615683c1", "event": "run", "status": "ok", "input": "--text", "model": "facebook/bart-large-mnli", "n_inputs": 1, "n_ok": 0, "n_rejected": 1, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 4.303, "cpu_s": 3.126, "peak_rss_mb": 176.1, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+Criterion 3, run 1. The three rejected prediction records from `run()` in `takemeter.py` (rows 2, 6 and 9 are the blank, spaces-only and tab-only rows) and the run record from `main()`:
+
+```json
+{"timestamp": "2026-11-16T02:48:21.940+00:00", "run_id": "3b0a520f", "event": "prediction", "input_id": 2, "input": "", "input_chars": 0, "model": "facebook/bart-large-mnli", "status": "rejected", "error": "empty post", "output": null, "score": null, "gold": "neutral", "duration_s": 0.0}
+{"timestamp": "2026-11-16T02:48:34.024+00:00", "run_id": "3b0a520f", "event": "prediction", "input_id": 6, "input": "", "input_chars": 0, "model": "facebook/bart-large-mnli", "status": "rejected", "error": "empty post", "output": null, "score": null, "gold": "hot_take", "duration_s": 0.0}
+{"timestamp": "2026-11-16T02:49:14.545+00:00", "run_id": "3b0a520f", "event": "prediction", "input_id": 9, "input": "", "input_chars": 0, "model": "facebook/bart-large-mnli", "status": "rejected", "error": "empty post", "output": null, "score": null, "gold": "neutral", "duration_s": 0.0}
+{"timestamp": "2026-11-16T02:49:14.545+00:00", "run_id": "3b0a520f", "event": "run", "status": "ok", "input": "capstone_tests/mixed_blank.csv", "model": "facebook/bart-large-mnli", "n_inputs": 10, "n_ok": 7, "n_rejected": 3, "n_error": 0, "model_load_s": 18.827, "inference_s": 38.378, "wall_s": 58.254, "cpu_s": 100.105, "peak_rss_mb": 1739.9, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+Criterion 4. The run record from `main()` in `takemeter.py` for run 1 is the one under criterion 1: `"wall_s": 64.574` is over the 60.0 s limit, while p95 (2.85 s, computed by `trial()` in `capstone_trials.py` from the 30 `duration_s` values) and `"peak_rss_mb": 1751.9` are inside theirs. Runs 2 and 3 were inside on all three (`"wall_s": 59.726` and `"wall_s": 51.271`).
+
+Criterion 5. `trial()` in `capstone_trials.py` counts `"correct": true` across the 30 prediction records that `run()` in `takemeter.py` wrote. It came to 12 on all three runs, the same 12 posts each time, because the model is deterministic on CPU. 12/30 is exactly the zero-shot baseline from Project 3.
