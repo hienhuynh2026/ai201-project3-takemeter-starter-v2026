@@ -433,3 +433,60 @@ Run path is Path B, local with logs. The model needs about 2 GB of RAM, roughly 
 - Hosting. No Render, no server, no web page or HTTP endpoint (an endpoint would be a new capability, Shape C, not this).
 - Retraining or saving the fine-tuned DistilBERT. The capstone wraps the classifier that already runs; it doesn't build a new one.
 - Changing my labels, label definitions, or data. The 0.40 accuracy from Unit 6 is a known weakness, and fixing it would be a different project.
+
+**Instrumentation**
+
+`takemeter.py` writes one JSON object per line to `logs/takemeter.jsonl`, appended by `RunLog.write()`. There are two kinds of record. A `prediction` record is written once per post by `run()`, with `timestamp`, `input` (first 280 characters), `output` (the label), `duration_s`, plus the internal fields that matter for this classifier: `score` and the full `scores` spread across the three labels, the `gold` label when the CSV has one, `correct`, and `status` (`ok`, `rejected`, or `error`). A `run` record is written once per run by `main()`, and it's written even when the run fails, because the run record is the one that says what went wrong (`error_stage`, `error`). It also carries the counts and the cost numbers: `model_load_s`, `inference_s`, `wall_s`, `cpu_s`, `peak_rss_mb`.
+
+The committed log (`logs/takemeter.jsonl`) is from one session on 2026-11-16: ten runs of `python takemeter.py` on the 30 held-out posts, then two bad inputs on purpose. `python takemeter.py --report` reads it back without any new code.
+
+The first three post records from the first run (post 1 is a broadcast schedule the model called a `hot_take`; gold says `neutral`):
+
+```json
+{"timestamp": "2026-11-16T02:34:09.826+00:00", "run_id": "17a088bb", "event": "prediction", "input_id": 0, "input": "I like Kyrie on this Dallas team but he doesn't match the timeline. If Dallas gets a decent offer that meshes more with Flagg (a younger player, picks or both) they should move him, imo.", "input_chars": 186, "model": "facebook/bart-large-mnli", "status": "ok", "output": "hot_take", "score": 0.8415, "scores": {"hot_take": 0.8415, "stat_backed": 0.1068, "neutral": 0.0517}, "gold": "hot_take", "correct": true, "duration_s": 6.176}
+{"timestamp": "2026-11-16T02:34:11.501+00:00", "run_id": "17a088bb", "event": "prediction", "input_id": 1, "input": "15 free Cavs games with the ol' bunny ears over the airwaves on RESN and 3 more additional Cavs games the same way via NBC National broadcast.", "input_chars": 142, "model": "facebook/bart-large-mnli", "status": "ok", "output": "hot_take", "score": 0.7527, "scores": {"hot_take": 0.7527, "stat_backed": 0.212, "neutral": 0.0354}, "gold": "neutral", "correct": false, "duration_s": 1.674}
+{"timestamp": "2026-11-16T02:34:13.049+00:00", "run_id": "17a088bb", "event": "prediction", "input_id": 2, "input": "We'll see how season 2 goes. He was playing with house money last year. Everything was upside. Its not a contract year, but eventually a guard in San Antonio will have to make a decision to embrace the 6th man role, force a trade, or wait to be traded.", "input_chars": 252, "model": "facebook/bart-large-mnli", "status": "ok", "output": "hot_take", "score": 0.7324, "scores": {"hot_take": 0.7324, "stat_backed": 0.1898, "neutral": 0.0778}, "gold": "hot_take", "correct": true, "duration_s": 1.547}
+```
+
+The run records for all ten measured runs, one line each:
+
+```json
+{"timestamp": "2026-11-16T02:34:49.318+00:00", "run_id": "17a088bb", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 13.853, "inference_s": 45.657, "wall_s": 61.568, "cpu_s": 178.038, "peak_rss_mb": 1751.6, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:35:43.305+00:00", "run_id": "a0a392bd", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 11.049, "inference_s": 40.306, "wall_s": 52.649, "cpu_s": 169.312, "peak_rss_mb": 1750.3, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:36:37.711+00:00", "run_id": "540bf26d", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 8.199, "inference_s": 44.372, "wall_s": 53.526, "cpu_s": 175.862, "peak_rss_mb": 1750.1, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:37:34.138+00:00", "run_id": "69aa3f26", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 9.282, "inference_s": 45.133, "wall_s": 55.478, "cpu_s": 181.279, "peak_rss_mb": 1752.2, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:38:30.820+00:00", "run_id": "7b57d8e3", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 8.519, "inference_s": 46.215, "wall_s": 55.759, "cpu_s": 184.194, "peak_rss_mb": 1750.8, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:39:23.521+00:00", "run_id": "78af78c0", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 8.369, "inference_s": 42.046, "wall_s": 51.699, "cpu_s": 172.701, "peak_rss_mb": 1750.1, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:40:15.938+00:00", "run_id": "c356d5a9", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 8.511, "inference_s": 42.001, "wall_s": 51.442, "cpu_s": 174.128, "peak_rss_mb": 1752.4, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:41:09.692+00:00", "run_id": "86b20dbd", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 9.907, "inference_s": 41.526, "wall_s": 52.749, "cpu_s": 173.963, "peak_rss_mb": 1751.5, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:42:05.701+00:00", "run_id": "3b2955ec", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 9.662, "inference_s": 44.014, "wall_s": 55.009, "cpu_s": 177.724, "peak_rss_mb": 1750.5, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:43:05.549+00:00", "run_id": "4068410d", "event": "run", "status": "ok", "input": "test_split.csv", "model": "facebook/bart-large-mnli", "n_inputs": 30, "n_ok": 30, "n_rejected": 0, "n_error": 0, "model_load_s": 11.964, "inference_s": 45.459, "wall_s": 58.829, "cpu_s": 183.796, "peak_rss_mb": 1750.0, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+The bad path. A file that doesn't exist (`--input posts_that_dont_exist.csv`) fails at `read_input` and the run record says so. A blank post (`--text "   "`) is rejected without loading the model, so it gets a `rejected` prediction record and a run record with `n_rejected: 1`:
+
+```json
+{"timestamp": "2026-11-16T02:43:12.467+00:00", "run_id": "736ed268", "event": "run", "status": "error", "error_stage": "read_input", "error": "No file at posts_that_dont_exist.csv", "input": "posts_that_dont_exist.csv", "model": "facebook/bart-large-mnli", "n_inputs": 0, "n_ok": 0, "n_rejected": 0, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 5.836, "cpu_s": 5.709, "peak_rss_mb": 220.5, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+{"timestamp": "2026-11-16T02:43:12.997+00:00", "run_id": "d2b44fc8", "event": "prediction", "input_id": 0, "input": "", "input_chars": 0, "model": "facebook/bart-large-mnli", "status": "rejected", "error": "empty post", "output": null, "score": null, "gold": null, "duration_s": 0.0}
+{"timestamp": "2026-11-16T02:43:16.118+00:00", "run_id": "d2b44fc8", "event": "run", "status": "ok", "input": "--text", "model": "facebook/bart-large-mnli", "n_inputs": 1, "n_ok": 0, "n_rejected": 1, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 3.12, "cpu_s": 3.779, "peak_rss_mb": 175.8, "device": "cpu", "torch_threads": 4, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+Two things in these records that I wouldn't have known without the log. The first post of every run is slow (6.18 s in run `17a088bb` against a median of 1.38 s), which is torch warming up, not that post being hard. And the bad-path runs are slower than they should be: the missing-file run took 5.8 s to report a typo, and the blank post's prediction record is stamped 02:43:12.997 while its run record is stamped 02:43:16.118, so 3.1 s went by after the work was already done.
+
+**What It Costs**
+
+TakeMeter makes no API calls, so the cost is compute time on my own machine: an Intel Core i5-8257U (4 cores, torch using 4 threads), 16 GB RAM, macOS, Python 3.12.15, CPU only, model already in the Hugging Face cache.
+
+How it was measured: `main()` takes `time.perf_counter()` (wall) and `time.process_time()` (CPU, summed across threads) at the start of the run and again when it writes the run record, and `resource.getrusage()` for peak memory. Model load and per-post inference are timed separately inside `run()`. I ran `python takemeter.py` ten times back to back with nothing else running, then `python takemeter.py --report --last 12` averaged the run records:
+
+```
+Successful runs on test_split.csv: 10 (posts per run: [30])
+  wall per run           mean    54.87s  min    51.44s  max    61.57s
+  CPU per run            mean   177.10s  min   169.31s  max   184.19s
+  model load             mean     9.93s  min     8.20s  max    13.85s
+  inference total        mean    43.67s  min    40.31s  max    46.22s
+  peak RSS               mean  1750.95 MB  min  1750.00 MB  max  1752.40 MB
+  per-post latency       p50 1.38s  p95 2.48s  max 6.18s  (n=300)
+```
+
+So one run of TakeMeter on 30 posts costs **54.9 s of wall time, 177.1 s of CPU time, and 1.75 GB of memory at peak**. Per post that's about 1.83 s of wall time (54.87 / 30) or 1.46 s if you leave out the one-time model load (43.67 / 30). CPU time is about 3.2 times wall time because the four cores work in parallel. Model load is 18% of the run (9.93 / 54.87); the rest is inference, which runs one forward pass per label, three per post.
