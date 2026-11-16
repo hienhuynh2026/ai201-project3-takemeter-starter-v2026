@@ -30,6 +30,7 @@ import sys
 import time
 import uuid
 from datetime import datetime, timezone
+from importlib.metadata import version as package_version
 from pathlib import Path
 
 from baseline import HYPOTHESIS, ZERO_SHOT_MODEL, load_definitions
@@ -266,9 +267,10 @@ def main():
     except KeyboardInterrupt:
         status, failure = "error", {"error_stage": "interrupted", "error": "KeyboardInterrupt"}
 
-    import torch
-    import transformers
-
+    # Versions come from package metadata, not from importing the packages: importing
+    # torch and transformers costs about 4 s, which a run that failed before loading
+    # the model should not pay just to write its run record.
+    torch_mod = sys.modules.get("torch")
     record = log.write(
         "run",
         status=status,
@@ -280,10 +282,10 @@ def main():
         cpu_s=round(time.process_time() - cpu0, 3),
         peak_rss_mb=peak_rss_mb(),
         device="cpu",
-        torch_threads=torch.get_num_threads(),
+        torch_threads=torch_mod.get_num_threads() if torch_mod else None,
         python=platform.python_version(),
-        torch=torch.__version__,
-        transformers=transformers.__version__,
+        torch=package_version("torch"),
+        transformers=package_version("transformers"),
         machine=f"{platform.system()} {platform.machine()}",
     )
     print(f"\nrun {log.run_id}: {status}, {stats['n_ok']}/{stats['n_inputs']} classified, "

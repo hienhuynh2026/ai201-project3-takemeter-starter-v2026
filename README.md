@@ -533,3 +533,49 @@ Criterion 3, run 1. The three rejected prediction records from `run()` in `takem
 Criterion 4. The run record from `main()` in `takemeter.py` for run 1 is the one under criterion 1: `"wall_s": 64.574` is over the 60.0 s limit, while p95 (2.85 s, computed by `trial()` in `capstone_trials.py` from the 30 `duration_s` values) and `"peak_rss_mb": 1751.9` are inside theirs. Runs 2 and 3 were inside on all three (`"wall_s": 59.726` and `"wall_s": 51.271`).
 
 Criterion 5. `trial()` in `capstone_trials.py` counts `"correct": true` across the 30 prediction records that `run()` in `takemeter.py` wrote. It came to 12 on all three runs, the same 12 posts each time, because the model is deterministic on CPU. 12/30 is exactly the zero-shot baseline from Project 3.
+
+One thing in these lines looks wrong and isn't. The empty-post run's prediction is stamped 02:47:27.005 and its run record 02:47:47.475, 20 s apart, but `wall_s` says 4.3 s. The Mac's power log (`pmset -g log`) shows the lid closing at 02:47:24 UTC and the machine sleeping until 02:47:47. `timestamp` comes from the wall clock, while `wall_s` comes from `time.perf_counter()`, which on macOS doesn't count time asleep. So both are right: 4.3 s of work, with 20 s of real time around it. The same log shows the Mac on battery at 33% until that moment, which matters for criterion 4 below.
+
+No criterion needed revising. All five could be measured from the log as written, so every target above is the original one.
+
+**The Improvement**
+
+What missed, where, and why:
+
+- **Criterion 2 (bad input fails fast).** Stage: writing the run record at the end of `main()` in `takemeter.py`, after the run had already failed or finished. Mechanism: `main()` ran `import torch` and `import transformers` unconditionally, only to put two version strings and a thread count into the run record. Importing those two packages costs 4.0 s on this machine (`time python -c "import torch, transformers"`: 4.042 s total). A run that never loaded the model was paying for it anyway. The failure was always named correctly; only the clock missed.
+- **Criterion 4 (30-post budget).** Stage: inference in `run()`. Run 1 spent 53.8 s on inference, against 46.2 s and 42.7 s in runs 2 and 3. Mechanism: run 1 was the only one on battery, at 33% charge (power log), and the CPU did the same work slower. Runs 2 and 3 passed. Nothing in the code caused this miss.
+- **Criterion 5 (labels worth reading).** Stage: classification in `run()`. Mechanism: the zero-shot model labels every one of the 30 posts `hot_take`. The 12 correct are exactly the 12 posts whose gold label is `hot_take`; all 13 `neutral` and 5 `stat_backed` posts are wrong. The model is reading `"This post is a confident opinion or prediction..."` as the most entailed hypothesis for nearly any sports post. It's a constant classifier wearing a model's clothes.
+
+The one fix, for criterion 2: `main()` now reads the torch and transformers versions with `importlib.metadata.version()`, which reads the installed package's metadata without importing it, and it only asks torch for its thread count if torch is already in `sys.modules` (meaning the model was loaded this run). That's an 8-line change in `takemeter.py`. Then I re-ran all five criteria three times with `python capstone_trials.py --trials 3 --log logs/trials_after.jsonl --out trials_after.json`, with the lid open and the Mac on AC power.
+
+Before the fix (`trials_before.json`):
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Every post leaves a complete record | 30/30 complete prediction records and 1 run record with n_ok 30 | 30/30, 1 run record | 30/30, 1 run record | 30/30, 1 run record | MET |
+| 2. A bad input fails fast and says why | 3/3 bad inputs named, right exit code, under 2.0 s | 0/3 (6.29 s, 4.36 s, 4.70 s) | 0/3 (5.21 s, 3.26 s, 2.60 s) | 0/3 (5.68 s, 4.29 s, 2.50 s) | MISSED |
+| 3. One blank row doesn't sink a batch | 7 ok, 3 rejected, run ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | MET |
+| 4. A 30-post run stays inside its measured budget | wall ≤ 60.0 s, p95 ≤ 3.0 s, peak ≤ 1800 MB | 64.57 s, 2.85 s, 1751.9 MB | 59.73 s, 2.91 s, 1749.5 MB | 51.27 s, 2.54 s, 1748.5 MB | MISSED |
+| 5. The labels are worth reading | at least 15/30 correct | 12/30 | 12/30 | 12/30 | MISSED |
+
+After the fix (`trials_after.json`):
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Every post leaves a complete record | 30/30 complete prediction records and 1 run record with n_ok 30 | 30/30, 1 run record | 30/30, 1 run record | 30/30, 1 run record | MET |
+| 2. A bad input fails fast and says why | 3/3 bad inputs named, right exit code, under 2.0 s | 3/3 (0.88 s, 0.82 s, 0.13 s) | 3/3 (1.02 s, 0.84 s, 0.15 s) | 3/3 (0.85 s, 0.82 s, 0.14 s) | MET |
+| 3. One blank row doesn't sink a batch | 7 ok, 3 rejected, run ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | 7 ok, 3 rejected, ok, exit 0 | MET |
+| 4. A 30-post run stays inside its measured budget | wall ≤ 60.0 s, p95 ≤ 3.0 s, peak ≤ 1800 MB | 41.72 s, 1.94 s, 1751.6 MB | 44.20 s, 1.80 s, 1750.3 MB | 44.54 s, 1.76 s, 1748.8 MB | MET |
+| 5. The labels are worth reading | at least 15/30 correct | 12/30 | 12/30 | 12/30 | MISSED |
+
+The missing-file run record from `main()` in `takemeter.py`, after the fix, next to the 5.625 s one above:
+
+```json
+{"timestamp": "2026-11-16T02:54:03.470+00:00", "run_id": "04d47883", "event": "run", "status": "error", "error_stage": "read_input", "error": "No file at capstone_tests/this_file_does_not_exist.csv", "input": "capstone_tests/this_file_does_not_exist.csv", "model": "facebook/bart-large-mnli", "n_inputs": 0, "n_ok": 0, "n_rejected": 0, "n_error": 0, "model_load_s": null, "inference_s": 0.0, "wall_s": 0.653, "cpu_s": 1.388, "peak_rss_mb": 77.7, "device": "cpu", "torch_threads": null, "python": "3.12.15", "torch": "2.2.2", "transformers": "4.57.6", "machine": "Darwin x86_64"}
+```
+
+What the fix actually did. Criterion 2 went from 0/9 to 9/9 bad inputs inside the limit. A typo in a file name now costs 0.65 s instead of 5.6 s, and peak memory on that path dropped from 221 MB to 78 MB because torch never loads. The 0.6 s that's left is mostly importing pandas to read the CSV. The empty post is down to 0.001 s logged and 0.14 s from the shell, which is basically Python starting up.
+
+What it didn't do, even though the table makes it look that way. Criterion 4 flipped to MET, but the fix had nothing to do with it. On a normal run the model loads, torch is already imported, and the new code takes the same path the old code did. The 30-post runs got faster (41.7 to 44.5 s, against 51.3 to 64.6 s before and a 54.9 s average in Milestone 3) because the Mac was plugged in with the lid open this time, not because of anything I changed. I'm reporting criterion 4 as MET because it held on three trials, but I wouldn't trust it on battery. It's a real result about the machine, not an improvement to TakeMeter.
+
+Trade-offs. A run that fails before loading the model now logs `"torch_threads": null` instead of 4, so that field only means something on runs that classified posts. And `importlib.metadata` reports what's installed, not what got imported; if two copies of torch were on the path those could differ. Neither seems likely to matter here, and both are visible in the log if they ever do.
